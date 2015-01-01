@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/arjunmehta/node-minimarg/issues"
   },
-  "homepage": "https://github.com/arjunmehta/node-minimarg"
+  "homepage": "https://github.com/arjunmehta/node-minimarg",
+  "dependencies": {
+    "subarg": "~1.0.0"
+  }
 }
