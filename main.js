@@ -7,23 +7,38 @@ function Program() {
     this.selected = {};
 }
 
-Program.prototype.option = function(flag, shortcut, description, fn) {
+Program.prototype.option = function(settings) {
 
-    if (flag.substr(0, 2) === '--') {
-        flag = flag.slice(2);
+    var flag = settings.flag;
+
+    if (!flag) {
+        return new Error("You must specify at least a flag name when setting an option");
     }
 
-    this.options[flag] = {
-        shortcut: shortcut.slice(1),
-        description: description,
-        action: fn,
-        program: this,
-        value: null,
-        raw_value: null
-    };
+    settings.flag = clearLeadingDashes(flag);
+    settings.shortcut = createShortcut(settings.shortcut, flag);
+
+    this.options[flag] = settings;
 
     return this;
 };
+
+function createShortcut(shortcut, flag) {
+    if (!shortcut) {
+        shortcut = flag[0];
+    } else {
+        shortcut = clearLeadingDashes(shortcut);
+    }
+    return shortcut;
+}
+
+function clearLeadingDashes(str) {
+    for (var i = 0; i < str.length; i++) {
+        if (str[i] !== '-')
+            break;
+    }
+    return str.slice(i);
+}
 
 Program.prototype.parse = function(argv) {
 
@@ -38,9 +53,14 @@ Program.prototype.parse = function(argv) {
         value = args[option] || args[this.options[option].shortcut];
 
         if (value) {
+
             used_flag = (args[option]) ? '--' + args[option] : '-' + args[this.options[option].shortcut];
+
             this.selected[option] = value;
-            this.options[option].action(value);
+
+            if (typeof this.options[option].action === 'function') {
+                this.options[option].action(value);
+            }
         }
     }
 };

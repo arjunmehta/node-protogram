@@ -23,23 +23,26 @@ Include the package in your project
 var program = require('minimarg');
 ```
 
-Add the options you want your program to handle.
+Add the options you want your program to handle and how you want to handle them.
 ```javascript
 program.option('--generic', '-g', 'Use a generic flag to do anything', function(value) {
     console.log('Your generic value is', value);
 });
 
-program.option('--help', '-h', 'Display usage information', function(value) {
+program.option('--help', '-h', 'Display usage information', displayHelp);
 
-    var programOptions = this.program.options;
+function displayHelp() {
 
-    console.log('Welcome to the Minimarg sample program!');
-    console.log('Usage:');
+    var programOptions = program.options;
+
+    console.log('\n  Multiview v.' + pjson.version);
+    console.log('  Usage: multiview [options]\n');
 
     for (var option in programOptions) {
-        console.log(option, programOptions[option].shortcut, programOptions[description].shortcut);
+        console.log('    ' + '--' + option, '-' + programOptions[option].shortcut, programOptions[option].description);
     }
-});
+    console.log("\n");
+}
 ```
 
 Parse your arguments into the program.
