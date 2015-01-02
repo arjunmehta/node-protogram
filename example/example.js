@@ -68,21 +68,10 @@ function rebuildCommand(err, value) {
 }
 
 function spawnCommand(err, value) {
-
     if (err) throw err;
 
     var arr = program.buildSpawnArray(value);
     console.log("spawing from array", arr);
 
-    var little_one = spawn(arr[0], arr.slice(1));
-
-    little_one.stdout.on('data', function(data) {
-        process.stdout.write(data);
-    });
-    little_one.stderr.on('data', function(data) {
-        process.stderr.write(data);
-    });
-    little_one.on('close', function(code) {
-        console.log('child process exited with code ' + code);
-    });
+    var little_one = spawn(arr[0], arr.slice(1), {stdio: "inherit"});
 }
