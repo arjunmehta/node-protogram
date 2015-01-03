@@ -1,18 +1,18 @@
-# miniflag
+# minimarg
 
-![heartbeats title image](https://raw.githubusercontent.com/arjunmehta/node-miniflag/image/image/miniflag.png)
+![heartbeats title image](https://raw.githubusercontent.com/arjunmehta/node-minimarg/image/image/minimarg.png)
 
 Easily set up command-line argument handlers while retaining full control over them. Some things this module provides:
 
 - **a minimal interface**
-- **control over the handling of argument values**
+- **control over the handling of argument flags**
 - **ability to handle sub-contexts in your arguments a la [subarg](https://github.com/substack/subarg)**
 - **access the raw arguments, parsed arguments, and their shortcuts along with their values**
 - **a few useful methods for `child_process.exec` and `child_process.spawn`**
 
 ## Installation
 ```bash
-npm install -save miniflag
+npm install -save minimarg
 ```
 
 ## Basic Usage
@@ -20,7 +20,7 @@ npm install -save miniflag
 ### Include
 
 ```javascript
-var program = require('miniflag');
+var program = require('minimarg');
 ```
 
 ### Add Option Flags and Their Handlers
@@ -61,17 +61,23 @@ if(program.selected['generic']){
 }
 ```
 
+### View All Parsed Arguments
+You can view the parsed arguments (parsed with [subarg](https://github.com/substack/subarg)) easily. Do what you will with them.
+```
+console.log(program.parsed);
+```
+
 ## Example Program
 Try the example program included in the module to get some ideas of how to use this.
 
 ```bash
-# Switch to the miniflag module directory
-cd ./node_modules/miniflag
+# Switch to the minimarg module directory
+cd ./node_modules/minimarg
 
 # install dependencies for the example
 npm install
 
-# run the example program
+# run the example program and experiment
 node ./example/example.js -h
 ```
 
@@ -214,7 +220,7 @@ function displayHelp(err, value) {
     var display = [],
         flag;
 
-    console.log('\n  Miniflag Test Case ' + 'v1.0.0');
+    console.log('\n  Minimarg Test Case ' + 'v1.0.0');
     console.log('  Usage: node test/test.js [options]\n');
 
     for (var flag_name in program.options) {

@@ -41,7 +41,7 @@ function displayHelp(err, value) {
     var display = [],
         flag;
 
-    console.log('\n  Miniflag Example CLI Program ' + 'v1.0.0');
+    console.log('\n  Minimarg Example CLI Program ' + 'v1.0.0');
     console.log('  Usage: node example/example.js [options]\n');
 
     for (var flag_name in program.options) {

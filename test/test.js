@@ -60,7 +60,7 @@ exports['Parse Arguments'] = function(test) {
 
     var fake_argv = [
         "node",
-        "/Users/arjun/Working/node-miniflag/example/example.js",
+        "/Users/arjun/Working/node-minimarg/example/example.js",
         "another",
         "--number",
         "297261",
@@ -126,7 +126,7 @@ exports['Action Execution'] = function(test) {
         executed = 0,
         fake_argv = [
             "node",
-            "/Users/arjun/Working/node-miniflag/example/example.js",
+            "/Users/arjun/Working/node-minimarg/example/example.js",
             "-g",
             "a string variable",
             "-u",
@@ -168,7 +168,7 @@ exports['Required'] = function(test) {
         executed = 0,
         fake_argv = [
             "node",
-            "/Users/arjun/Working/node-miniflag/example/example.js",
+            "/Users/arjun/Working/node-minimarg/example/example.js",
             "-g",
             "-u",
             "297261"

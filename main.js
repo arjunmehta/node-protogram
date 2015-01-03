@@ -18,7 +18,7 @@ Program.prototype.option = function(flag_name, options) {
     options = options || {};
 
     if (typeof flag_name !== 'string') {
-        throw new Error("Hey miniflag developer: You must specify at least a flag name when setting an option for your program");
+        throw new Error("Hey minimarg developer: You must specify at least a flag name when setting an option for your program");
     }
 
     options.flag_name = flag_name = clearLeadingDashes(flag_name);
@@ -85,8 +85,7 @@ Program.prototype.buildCommand = function(subContext, type) {
 
     var op,
         obj;
-
-
+        
     if (type === 'array') {
         obj = [];
         op = concatArray;
