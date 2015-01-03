@@ -37,6 +37,11 @@ Program.prototype.option = function(flag_name, options, fn) {
     return this;
 };
 
+Program.prototype.command = function(flag_name, options, fn) {
+
+    return this;
+};
+
 Program.prototype.parse = function(argv) {
 
     if (!Array.isArray(argv) && typeof argv === 'object') {

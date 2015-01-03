@@ -4,6 +4,8 @@ var exec = require('child_process').exec;
 var columnify = require('columnify');
 var program = require('../main');
 
+var pjson = require('../package.json');
+
 console.log(JSON.stringify(process.argv));
 
 program.option('--help', {
@@ -32,6 +34,19 @@ program.option('--help', {
 
 program.option('--somethingElse');
 
+program.command('run', {
+    alias: 'exec',
+    required: 'filename',
+    description: '',
+    action: function(err, args){
+
+    }
+}).option('--new', {
+    action: function(err, val) {
+
+    }
+});
+
 program.parse(process.argv);
 
 
@@ -40,7 +55,7 @@ function displayHelp(err, value) {
     var display = [],
         flag;
 
-    console.log('\n  Minimarg Example CLI Program ' + 'v1.0.0');
+    console.log('\n  ' + pjson.name + ' v' + pjson.version);
     console.log('  Usage: node example/example.js [options]\n');
 
     for (var flag_name in program.options) {
