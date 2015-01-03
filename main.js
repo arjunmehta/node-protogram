@@ -3,10 +3,13 @@ var subarg = require('subarg');
 function Program() {
     this.options = {};
     this.raw_arguments = {};
+    this.raw_parsed = {};
     this.parsed = {};
-    this.selected = {};
 }
 
+Program.prototype.createProgram = Program.prototype.newProgram = function() {
+    return new Program();
+};
 
 // Main API Methods
 
@@ -15,7 +18,7 @@ Program.prototype.option = function(flag_name, options) {
     options = options || {};
 
     if (typeof flag_name !== 'string') {
-        throw new Error("Hey minimarg developer: You must specify at least a flag name when setting an option for your program");
+        throw new Error("Hey miniflag developer: You must specify at least a flag name when setting an option for your program");
     }
 
     options.flag_name = flag_name = clearLeadingDashes(flag_name);
@@ -29,8 +32,12 @@ Program.prototype.option = function(flag_name, options) {
 
 Program.prototype.parse = function(argv) {
 
+    if (!Array.isArray(argv) && typeof argv === 'object') {
+        argv = this.buildSpawnArray(argv);
+    }
+
     var value = null,
-        args = subarg(argv.slice(2)),
+        args = subarg(argv),
         err = null,
         flag = null;
 
@@ -38,7 +45,7 @@ Program.prototype.parse = function(argv) {
         _: argv
     };
 
-    this.parsed = args;
+    this.raw_parsed = args;
 
     for (var flag_name in this.options) {
 
@@ -52,7 +59,9 @@ Program.prototype.parse = function(argv) {
                 err = null;
             }
 
-            this.selected[flag_name] = value;
+
+            this.parsed[flag_name] = value;
+
 
             if (typeof flag.action === 'function') {
                 flag.action(err, value);
@@ -122,7 +131,7 @@ Program.prototype.renderFlagDetails = function(flag_name) {
 
     str += flag.shortcut ? '-' + flag.shortcut + ', ' : '    ';
     str += '--' + flag_name;
-    str += ' ' + (flag.required ? '[' + flag.required + '] ' : (flag.optional ? '<' + flag.optional + '> ' : ' '));
+    str += ' ' + (flag.required ? '<' + flag.required + '> ' : (flag.optional ? '[' + flag.optional + '] ' : ' '));
 
     return str;
 };
@@ -132,7 +141,6 @@ function concatString(str, addition) {
 }
 
 function concatArray(arr, addition) {
-    console.log("concatArr arr object", arr);
     arr.push(addition);
     return arr;
 }

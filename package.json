@@ -1,15 +1,15 @@
 {
-    "name": "minimarg",
+    "name": "miniflag",
     "version": "1.0.0",
     "description": "Handle command line arguments and sub arguments without all the fat",
     "main": "main.js",
     "scripts": {
-        "test": "node ./test/test.js",
+        "test": "nodeunit test/test.js",
         "example": "node ./example/example.js"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/arjunmehta/node-minimarg.git"
+        "url": "https://github.com/arjunmehta/node-miniflag.git"
     },
     "keywords": [
         "yargs",
@@ -23,13 +23,14 @@
     "author": "Arjun Mehta",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/arjunmehta/node-minimarg/issues"
+        "url": "https://github.com/arjunmehta/node-miniflag/issues"
     },
-    "homepage": "https://github.com/arjunmehta/node-minimarg",
+    "homepage": "https://github.com/arjunmehta/node-miniflag",
     "dependencies": {
         "subarg": "~1.0.0"
     },
     "devDependencies": {
+        "nodeunit": "~0.8.8",
         "columnify": "~1.3.2"
     }
 }

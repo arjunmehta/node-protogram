@@ -1,6 +1,6 @@
-# minimarg
+# miniflag
 
-![heartbeats title image](https://raw.githubusercontent.com/arjunmehta/node-minimarg/image/image/minimarg.png)
+![heartbeats title image](https://raw.githubusercontent.com/arjunmehta/node-miniflag/image/image/miniflag.png)
 
 Easily set up command-line argument handlers while retaining full control over them. Some things this module provides:
 
@@ -12,7 +12,7 @@ Easily set up command-line argument handlers while retaining full control over t
 
 ## Installation
 ```bash
-npm install -save minimarg
+npm install -save miniflag
 ```
 
 ## Basic Usage
@@ -20,7 +20,7 @@ npm install -save minimarg
 ### Include
 
 ```javascript
-var program = require('minimarg');
+var program = require('miniflag');
 ```
 
 ### Add Option Flags and Their Handlers
@@ -65,8 +65,8 @@ if(program.selected['generic']){
 Try the example program included in the module to get some ideas of how to use this.
 
 ```bash
-# Switch to the minimarg module directory
-cd ./node_modules/minimarg
+# Switch to the miniflag module directory
+cd ./node_modules/miniflag
 
 # install dependencies for the example
 npm install
@@ -122,7 +122,7 @@ program.parse(process.argv);
 ```
 
 ### program.selected[flag]
-Check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `program.parse`.
+An object you can use to check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `program.parse`.
 
 ```javascript
 if(program.selected['name']){
@@ -130,9 +130,25 @@ if(program.selected['name']){
 }
 ```
 
-### program.raw_arguments
+### program.newProgram()
+You can parse arguments from sub contexts by just creating a new program. Imagine:
+```bash
+myprogram --optionA --optionB --subprogram [ node ./main.js --optionA --optionB ]
+```
+
+```
+var new_program = program.newProgram();
+```
+
+Now you can parse subcontexts passed through the main program and perform actions on them too.
+
+```javascript
+new_program.options(...);
+new_program.parse(program.selected['subprogram'])
+```
 
 ## Extra API
+
 The following is some other useful stuff available in the API that might help you when dealing with command line arguments.
 
 ### program.buildExecString(arguments_object)
@@ -198,7 +214,7 @@ function displayHelp(err, value) {
     var display = [],
         flag;
 
-    console.log('\n  Minimarg Test Case ' + 'v1.0.0');
+    console.log('\n  Miniflag Test Case ' + 'v1.0.0');
     console.log('  Usage: node test/test.js [options]\n');
 
     for (var flag_name in program.options) {

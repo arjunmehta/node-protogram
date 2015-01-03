@@ -4,6 +4,8 @@ var exec = require('child_process').exec;
 var columnify = require('columnify');
 var program = require('../main');
 
+console.log(JSON.stringify(process.argv));
+
 program.option('--help', {
         shortcut: '-h',
         description: 'display usage information',
@@ -22,6 +24,11 @@ program.option('--help', {
         description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code) (ex. --execute [ ls -l ./ ])',
         required: 'command string',
         action: spawnCommand
+    })
+    .option('--subcontext', {
+        description: 'test subcontexts',
+        required: 'command string',
+        action: testSubcontext
     });
 
 program.option('--somethingElse');
@@ -34,7 +41,7 @@ function displayHelp(err, value) {
     var display = [],
         flag;
 
-    console.log('\n  Minimarg Example CLI Program ' + 'v1.0.0');
+    console.log('\n  Miniflag Example CLI Program ' + 'v1.0.0');
     console.log('  Usage: node example/example.js [options]\n');
 
     for (var flag_name in program.options) {
@@ -78,4 +85,20 @@ function spawnCommand(err, value) {
     var little_one = spawn(arr[0], arr.slice(1), {
         stdio: "inherit"
     });
+}
+
+function testSubcontext(err, value) {
+    if (err) throw err;
+
+    console.log("SUB CONTEXT RAW PARSED VALUE", JSON.stringify(value));
+
+    var new_program = program.createProgram();
+
+    new_program.option('--good', {
+        action: function(err, value) {
+            console.log("GOOD WORKED", value);
+        }
+    });
+
+    new_program.parse(value);
 }
