@@ -86,7 +86,7 @@ exports['Parse Arguments'] = function(test) {
 
     test.equal(program.raw_arguments._, fake_argv);
 
-    test.equal(program.parsed._[0], fake_argv[2]);
+    test.equal(program.parsed._[2], fake_argv[2]);
     test.equal(program.parsed.number, 297261);
     test.equal(program.parsed.t, 'something');
     test.equal(program.parsed.x, 'something longer than just 1 word');

@@ -3,8 +3,8 @@ var subarg = require('subarg');
 function Program() {
     this.options = {};
     this.raw_arguments = {};
-    this.raw_parsed = {};
     this.parsed = {};
+    this.selected = {};
 }
 
 Program.prototype.createProgram = Program.prototype.newProgram = function() {
@@ -52,7 +52,7 @@ Program.prototype.parse = function(argv) {
         _: argv
     };
 
-    this.raw_parsed = args;
+    this.parsed = args;
 
     for (var flag_name in this.options) {
 
@@ -67,7 +67,7 @@ Program.prototype.parse = function(argv) {
             }
 
 
-            this.parsed[flag_name] = value;
+            this.selected[flag_name] = value;
 
 
             if (typeof flag.action === 'function') {
