@@ -7,8 +7,7 @@ Easily set up command-line argument handlers while retaining full control over t
 - **a minimal interface**
 - **control over the handling of argument values**
 - **ability to handle sub-contexts in your arguments a la [subarg](https://github.com/substack/subarg)**
-- **output a regenerated interpretation of the original command string (useful for subcontexts)**
-- **access the raw arguments, parsed arguments, and coerced arguments and their values**
+- **access the raw arguments, parsed arguments, and their shortcuts along with their values**
 - **a few useful methods for `child_process.exec` and `child_process.spawn`**
 
 ## Installation
