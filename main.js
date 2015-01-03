@@ -19,7 +19,7 @@ Program.prototype.option = function(flag_name, options) {
     }
 
     options.flag_name = flag_name = clearLeadingDashes(flag_name);
-    options.shortcut = createShortcut(options.shortcut, flag_name);
+    options.shortcut = createShortcut(options.shortcut, flag_name, this.options);
     options.description = options.description || '';
 
     this.options[flag_name] = options;
@@ -139,14 +139,21 @@ function concatArray(arr, addition) {
 
 function createShortcut(shortcut, flag_name, options) {
 
-    var j = 0,
-        exists = false;
+    var exists;
+
     if (!shortcut) {
         for (var i = 0; i < flag_name.length; i++) {
+            exists = false;
             shortcut = flag_name[i];
             for (var flag in options) {
-                if (options[flag].shortcut === shortcut) break;
-            }            
+                if (options[flag].shortcut === shortcut) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                break;
+            }
         }
     } else {
         shortcut = clearLeadingDashes(shortcut);
