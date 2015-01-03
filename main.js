@@ -13,10 +13,17 @@ Program.prototype.createProgram = Program.prototype.newProgram = function() {
 
 // Main API Methods
 
-Program.prototype.option = function(flag_name, options) {
+Program.prototype.option = function(flag_name, options, fn) {
 
     options = options || {};
 
+    if (typeof options === 'function' && fn === undefined) {
+        fn = options;
+        options = {};
+    }
+    if (typeof fn === 'function' && typeof options.action !== 'function') {
+        options.action = fn;
+    }
     if (typeof flag_name !== 'string') {
         throw new Error("Hey minimarg developer: You must specify at least a flag name when setting an option for your program");
     }
@@ -85,7 +92,7 @@ Program.prototype.buildCommand = function(subContext, type) {
 
     var op,
         obj;
-        
+
     if (type === 'array') {
         obj = [];
         op = concatArray;

@@ -83,15 +83,17 @@ node ./example/example.js -h
 
 
 ## API
-### program.option(flag_name, options)
+### program.option(flag_name, options, handler)
 Add a flag with `flag_name` as an option to your program.
+
+Use a handler method to handle the `value` passed in with the command-line flag. Also handles `err` which is non-`null` if a value is `required` but not set by the user. Alternatively look at the `action` option.
 
 #### Options
 `shortcut`: Specify a shortcut letter for the flag. Defaults to the first letter of the `flag_name`.
 `description`: Specify a description for the flag to recall later.
 `required`: Set this flag to a short 'string' describing a required value that needs to be passed in when this flag is set.
 `optional`: Set this flag to a short 'string' describing an optional value that needs to be passed in when this flag is set. If `required` is set, `optional` will be ignored.
-`action`: A callback method to handle the `value` passed in with the command-line flag. Also handles `err` which is non-`null` if a value is `required` but not set by the user.
+`action`: A convenience property to use to specify the handler method. If both are specified, only this one will be used.
 
 #### Minimal Example
 ```javascript

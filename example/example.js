@@ -8,9 +8,8 @@ console.log(JSON.stringify(process.argv));
 
 program.option('--help', {
         shortcut: '-h',
-        description: 'display usage information',
-        action: displayHelp
-    })
+        description: 'display usage information'
+    }, displayHelp)
     .option('--rebuild_command', {
         description: 'rebuild the original command',
         action: rebuildCommand
