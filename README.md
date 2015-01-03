@@ -1,6 +1,6 @@
 # minimarg
 
-![heartbeats title image](https://raw.githubusercontent.com/arjunmehta/node-minimarg/image/minimarg.png)
+![heartbeats title image](https://raw.githubusercontent.com/arjunmehta/node-minimarg/image/image/minimarg.png)
 
 Easily set up command-line argument handlers while retaining full control over them. Some things this module provides:
 
