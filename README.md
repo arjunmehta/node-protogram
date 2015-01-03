@@ -186,7 +186,6 @@ if(program.selected[spawn]){
 
 ```javascript
 var columnify = require('columnify');
-var pjson = require('./package.json');
 
 program.option('--help',{
     shortcut: "-h",
@@ -218,20 +217,29 @@ function displayHelp(err, value) {
 }
 ```
 
-### Execute Child Processes through CLI
+### Spawn Child Processes through CLI
 
-Let's say we want to execute another process with values passed into our program:
+Let's say we want to spawn another process with values passed into our program:
 
 ```javascript
-var exec = require(child_process).exec;
+var spawn = require(child_process).spawn;
 
-program.option('--execute', function(err, value) {
-    var flattenedContext = program.flatten(value);
-    var string
-    exec(flattenedContext[0], flattenedContext.slice(0), function(error, stdout, stderr){
-        console.log("Just Executed Sub Command", flattenedContext);
-    });
+program.option('--spawn', {
+    description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code) (ex. --execute [ ls -l ./ ])',
+    required: 'command string',
+    action: spawnCommand
 });
+
+function spawnCommand(err, value) {
+    if (err) throw err;
+
+    var arr = program.buildSpawnArray(value);
+    console.log("spawing from array", arr);
+
+    var little_one = spawn(arr[0], arr.slice(1), {
+        stdio: "inherit"
+    });
+}
 ```
 
 
