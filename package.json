@@ -4,7 +4,8 @@
     "description": "Handle command line arguments and sub arguments without all the fat",
     "main": "main.js",
     "scripts": {
-        "test": "node ./test/test.js -h"
+        "test": "node ./test/test.js",
+        "example": "node ./example/example.js"
     },
     "repository": {
         "type": "git",

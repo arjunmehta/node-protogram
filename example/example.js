@@ -14,15 +14,17 @@ program.option('--help', {
         action: rebuildCommand
     })
     .option('--execute', {
-        description: 'execute a command',
+        description: 'execute a command (ex. --execute [ ls -l ./ ])',
         required: 'command string',
         action: executeCommand
     })
     .option('--spawn', {
-        description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code)',
+        description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code) (ex. --execute [ ls -l ./ ])',
         required: 'command string',
         action: spawnCommand
     });
+
+program.option('--somethingElse');
 
 program.parse(process.argv);
 
@@ -32,8 +34,8 @@ function displayHelp(err, value) {
     var display = [],
         flag;
 
-    console.log('\n  Minimarg Test Case ' + 'v1.0.0');
-    console.log('  Usage: node test/test.js [options]\n');
+    console.log('\n  Minimarg Example CLI Program ' + 'v1.0.0');
+    console.log('  Usage: node example/example.js [options]\n');
 
     for (var flag_name in program.options) {
         flag = program.options[flag_name];
@@ -73,5 +75,7 @@ function spawnCommand(err, value) {
     var arr = program.buildSpawnArray(value);
     console.log("spawing from array", arr);
 
-    var little_one = spawn(arr[0], arr.slice(1), {stdio: "inherit"});
+    var little_one = spawn(arr[0], arr.slice(1), {
+        stdio: "inherit"
+    });
 }

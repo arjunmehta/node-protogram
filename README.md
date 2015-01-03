@@ -1,5 +1,7 @@
 # minimarg
 
+![heartbeats title image](https://raw.githubusercontent.com/arjunmehta/node-minimarg/image/minimarg.png)
+
 Easily set up command-line argument handlers while retaining full control over them. Some things this module provides:
 
 - **a minimal interface**
@@ -16,12 +18,13 @@ npm install -save minimarg
 
 ## Basic Usage
 
-Include the package in your project
+### Include
 
 ```javascript
 var program = require('minimarg');
 ```
 
+### Add Option Flags and Their Handlers
 Add option flags to your program.
 
 ```javascript
@@ -42,18 +45,35 @@ program.option('--generic', {
 });
 ```
 
-Parse your arguments into the program.
+### Parse Arguments
+
+Now that you've set everything up, you're ready to parse your program's arguments.
 
 ```javascript
 program.parse(process.argv);
 ```
 
-Test whether a specific flag name has been used
+### Test Flags
+If you'd prefer the good ol' fashioned way of testing your flags, instead of using the handlers, just test their existence after you've parsed your arguments:
 
 ```javascript
 if(program.selected['generic']){
     console.log('the --generic flag has been used!')
 }
+```
+
+## Example Program
+Try the example program included in the module to get some ideas of how to use this.
+
+```bash
+# Switch to the minimarg module directory
+cd ./node_modules/minimarg
+
+# install dependencies for the example
+npm install
+
+# run the example program
+node ./example/example.js -h
 ```
 
 

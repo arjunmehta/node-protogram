@@ -12,6 +12,8 @@ function Program() {
 
 Program.prototype.option = function(flag_name, options) {
 
+    options = options || {};
+
     if (typeof flag_name !== 'string') {
         throw new Error("Hey minimarg developer: You must specify at least a flag name when setting an option for your program");
     }
@@ -78,10 +80,10 @@ Program.prototype.buildCommand = function(subContext, type) {
 
     if (type === 'array') {
         obj = [];
-        op = concatArray;        
+        op = concatArray;
     } else {
         obj = '';
-        op = concatString;        
+        op = concatString;
     }
 
     for (var option in subContext) {
@@ -91,7 +93,7 @@ Program.prototype.buildCommand = function(subContext, type) {
             } else {
                 obj = op(obj, '--' + option);
             }
-        }      
+        }
 
         if (subContext[option] === 'true') {
             continue;
@@ -135,9 +137,17 @@ function concatArray(arr, addition) {
     return arr;
 }
 
-function createShortcut(shortcut, flag_name) {
+function createShortcut(shortcut, flag_name, options) {
+
+    var j = 0,
+        exists = false;
     if (!shortcut) {
-        shortcut = flag_name[0];
+        for (var i = 0; i < flag_name.length; i++) {
+            shortcut = flag_name[i];
+            for (var flag in options) {
+                if (options[flag].shortcut === shortcut) break;
+            }            
+        }
     } else {
         shortcut = clearLeadingDashes(shortcut);
     }
