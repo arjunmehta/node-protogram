@@ -16,10 +16,10 @@ function Prorogram(opts) {
 Object.defineProperty(Prorogram.prototype, "action", {
     enumerable: false,
     get: function() {
-        return this.options.action;
+        return this.opts.action;
     },
     set: function(fn) {
-        this.options.action = fn;
+        this.opts.action = fn;
     }
 });
 
@@ -112,19 +112,32 @@ function evalFlags(program, args, options) {
 function evalCmd(program, parse_args, argv, commands) {
 
     var possible_commands = parse_args._,
-        command, possible;
+        command,
+        possible,
+        subargs,
+        err;
 
     for (var i = 0; i < possible_commands.length; i++) {
+
         possible = possible_commands[i];
 
         for (var command_name in commands) {
+
             if (possible === command_name || possible === commands[command_name].alias) {
 
                 command = commands[command_name];
-                command.parse(argv.slice(i));
+
+                if (command.opts.required && possible_commands[i+1] === undefined) {
+                    err = new Error('Command "' + command_name + '" requires a value: ' + command.required);
+                } else {
+                    err = null;
+                }
+
+                subargs = argv.slice(i);
+                command.parse(subargs);
 
                 if (typeof command.action === 'function') {
-                    command.action(err, value);
+                    command.action(err, subargs);
                 }
                 return true;
             }

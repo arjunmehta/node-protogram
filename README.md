@@ -6,10 +6,10 @@
 
 Recursively create command-line programs and sub-programs. Easily handle arguments and sub-commands without all the fat. Some things this module provides:
 
-- **a minimal interface**
-- **control over the handling of argument flags**
-- **ability to handle sub-contexts in your arguments a la [subarg](https://github.com/substack/subarg)** and sub-commands.
-- **access the raw arguments and parsed arguments along with passed in user values**
+- **a minimal, scalable interface**
+- **control over the handling of argument flags and sub-commands**
+- **ability to handle sub-contexts in your arguments a la [subarg](https://github.com/substack/subarg)**.
+- **access the raw arguments and parsed arguments along with passed-in user values**
 - **a few useful methods for `child_process.exec` and `child_process.spawn`**
 
 ## Installation
