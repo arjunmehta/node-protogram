@@ -1,67 +1,96 @@
 var subarg = require('subarg');
 
-function Program() {
+
+function Prorogram(opts) {
+    this.opts = opts || {};
+
     this.options = {};
+    this.commands = {};
+
     this.raw_arguments = {};
     this.parsed = {};
+
     this.selected = {};
 }
 
-Program.prototype.createProgram = Program.prototype.newProgram = function() {
-    return new Program();
+Object.defineProperty(Prorogram.prototype, "action", {
+    enumerable: false,
+    get: function() {
+        return this.options.action;
+    },
+    set: function(fn) {
+        this.options.action = fn;
+    }
+});
+
+Prorogram.prototype.createProrogram = function createProrogram(opts) {
+    return new Prorogram(opts);
 };
+
 
 // Main API Methods
 
-Program.prototype.option = function(flag_name, options, fn) {
+Prorogram.prototype.option = function(flag_name, opts, fn) {
 
-    options = options || {};
+    opts = mergeOpts(opts, fn);
 
-    if (typeof options === 'function' && fn === undefined) {
-        fn = options;
-        options = {};
-    }
-    if (typeof fn === 'function' && typeof options.action !== 'function') {
-        options.action = fn;
-    }
     if (typeof flag_name !== 'string') {
-        throw new Error("Hey minimarg developer: You must specify at least a flag name when setting an option for your program");
+        throw new Error("Hey prorogram developer: You must specify at least a flag name when setting an option for your program");
     }
 
-    options.flag_name = flag_name = clearLeadingDashes(flag_name);
-    options.shortcut = createShortcut(options.shortcut, flag_name, this.options);
-    options.description = options.description || '';
+    opts.flag_name = flag_name = clearLeadingDashes(flag_name);
+    opts.shortcut = createShortcut(opts.shortcut, flag_name, this.options);
+    opts.description = opts.description || '';
 
-    this.options[flag_name] = options;
-
-    return this;
-};
-
-Program.prototype.command = function(flag_name, options, fn) {
+    this.options[flag_name] = opts;
 
     return this;
 };
 
-Program.prototype.parse = function(argv) {
+Prorogram.prototype.command = function(command_name, opts, fn) {
+
+    opts = mergeOpts(opts, fn);
+
+    if (typeof command_name !== 'string') {
+        throw new Error("Hey prorogram developer: You must specify at least a command name when setting a command for your program");
+    }
+
+    opts.command_name = command_name;
+    opts.description = opts.description || '';
+
+    this.commands[command_name] = this.createProrogram(opts);
+
+    return this.commands[command_name];
+};
+
+
+Prorogram.prototype.parse = function(argv) {
 
     if (!Array.isArray(argv) && typeof argv === 'object') {
-        argv = this.buildSpawnArray(argv);
+        argv = this.rebuildArgArray(argv);
     }
 
-    var value = null,
-        args = subarg(argv),
-        err = null,
-        flag = null;
-
+    this.parsed = subarg(argv);
     this.raw_arguments = {
         _: argv
     };
 
-    this.parsed = args;
+    if (!evalCmd(this, this.parsed, argv, this.commands)) {
+        console.log("COMMAND NOT FOUND");
+        evalFlags(this, this.parsed, this.options);
+    }
+};
 
-    for (var flag_name in this.options) {
 
-        flag = this.options[flag_name];
+function evalFlags(program, args, options) {
+
+    var value = null,
+        err = null,
+        flag = null;
+
+    for (var flag_name in options) {
+
+        flag = options[flag_name];
         value = args[flag_name] || args[flag.shortcut];
 
         if (value) {
@@ -71,71 +100,54 @@ Program.prototype.parse = function(argv) {
                 err = null;
             }
 
-
-            this.selected[flag_name] = value;
-
+            program.selected[flag_name] = value;
 
             if (typeof flag.action === 'function') {
                 flag.action(err, value);
             }
         }
     }
-};
+}
+
+
+function evalCmd(program, parse_args, argv, commands) {
+
+    var possible_commands = parse_args._,
+        command, possible;
+
+    for (var i = 0; i < possible_commands.length; i++) {
+        possible = possible_commands[i];
+
+        for (var command_name in commands) {
+            if (possible === command_name || possible === commands[command_name].alias) {
+
+                command = commands[command_name];
+                command.parse(argv.slice(i));
+
+                if (typeof command.action === 'function') {
+                    command.action(err, value);
+                }
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 
 // Extra Sauce API Methods
 
-Program.prototype.buildExecString = function(subContext) {
-    return this.buildCommand(subContext, 'string');
+Prorogram.prototype.rebuildArgString = function(parsed_args) {
+    return this.unparse(parsed_args, 'string');
 };
 
-Program.prototype.buildSpawnArray = function(subContext) {
-    return this.buildCommand(subContext, 'array');
+Prorogram.prototype.rebuildArgArray = function(parsed_args) {
+    return this.unparse(parsed_args, 'array');
 };
 
-Program.prototype.buildCommand = function(subContext, type) {
 
-    var op,
-        obj;
-
-    if (type === 'array') {
-        obj = [];
-        op = concatArray;
-    } else {
-        obj = '';
-        op = concatString;
-    }
-
-    for (var option in subContext) {
-        if (option !== '_') {
-            if (option.length === 1) {
-                obj = op(obj, '-' + option);
-            } else {
-                obj = op(obj, '--' + option);
-            }
-        }
-
-        if (subContext[option] === 'true') {
-            continue;
-        } else {
-            if (Array.isArray(subContext[option])) {
-                for (var i = 0; i < subContext[option].length; i++) {
-                    obj = op(obj, subContext[option][i]);
-                }
-            } else if (typeof subContext[option] === 'string') {
-                obj = op(obj, (type === 'array') ? '' + subContext[option] : '"' + subContext[option] + '"');
-            } else if (typeof subContext[option] === 'number') {
-                obj = op(obj, '' + subContext[option]);
-            } else if (typeof subContext[option] === 'object') {
-                obj = op(obj, '[ ' + this.flattenSubcontext(subContext[option]) + ' ]');
-            }
-        }
-    }
-
-    return obj;
-};
-
-Program.prototype.renderFlagDetails = function(flag_name) {
+Prorogram.prototype.renderFlagDetails = function(flag_name) {
 
     var flag = this.options[flag_name],
         str = '';
@@ -146,15 +158,6 @@ Program.prototype.renderFlagDetails = function(flag_name) {
 
     return str;
 };
-
-function concatString(str, addition) {
-    return str += addition + ' ';
-}
-
-function concatArray(arr, addition) {
-    arr.push(addition);
-    return arr;
-}
 
 function createShortcut(shortcut, flag_name, options) {
 
@@ -188,4 +191,18 @@ function clearLeadingDashes(str) {
     return str.slice(i);
 }
 
-module.exports = exports = new Program();
+function mergeOpts(opts, fn) {
+    opts = opts || {};
+
+    if (typeof opts === 'function' && fn === undefined) {
+        fn = opts;
+        opts = {};
+    }
+    if (typeof fn === 'function' && typeof opts.action !== 'function') {
+        opts.action = fn;
+    }
+
+    return opts;
+}
+
+module.exports = exports = new Prorogram();

@@ -43,7 +43,7 @@ program.command('run', {
     }
 }).option('--new', {
     action: function(err, val) {
-
+        console.log("NEW NEW NEW", val);
     }
 });
 
