@@ -23,7 +23,7 @@ Object.defineProperty(Prorogram.prototype, "action", {
     }
 });
 
-Prorogram.prototype.createProrogram = function createProrogram(opts) {
+Prorogram.prototype.create = function create(opts) {
     return new Prorogram(opts);
 };
 
@@ -76,7 +76,6 @@ Prorogram.prototype.parse = function(argv) {
     };
 
     if (!evalCmd(this, this.parsed, argv, this.commands)) {
-        console.log("COMMAND NOT FOUND");
         evalFlags(this, this.parsed, this.options);
     }
 };

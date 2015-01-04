@@ -105,7 +105,7 @@ exports['New Program'] = function(test) {
 
     test.expect(6);
 
-    var new_prorogram = prorogram.createProgram();
+    var new_prorogram = prorogram.create();
 
     test.equal(typeof new_prorogram.options, 'object');
     test.equal(typeof new_prorogram.selected, 'object');
@@ -122,7 +122,7 @@ exports['Action Execution'] = function(test) {
 
     test.expect(2);
 
-    var new_prorogram = prorogram.createProgram(),
+    var new_prorogram = prorogram.create(),
         executed = 0,
         fake_argv = [
             "node",
@@ -164,7 +164,7 @@ exports['Required'] = function(test) {
 
     test.expect(2);
 
-    var another_new_prorogram = prorogram.createProgram(),
+    var another_new_prorogram = prorogram.create(),
         executed = 0,
         fake_argv = [
             "node",
