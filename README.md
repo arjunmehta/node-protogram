@@ -53,7 +53,7 @@ Infinitely add git-style commands to your program, and build them as you would y
 ```javascript
 var sub_prorogram = prorogram.command('run', {
     alias: 'execute',
-    description: 'execute',
+    description: 'execute a command',
     required: 'path name',
     action: function(err, args){
         if(err) console.error('Error!', err)

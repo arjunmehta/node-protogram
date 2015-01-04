@@ -13,6 +13,9 @@ function Prorogram(opts) {
     this.selected = {};
 }
 
+
+// Prototype Setter/Getter Properties
+
 Object.defineProperty(Prorogram.prototype, "action", {
     enumerable: false,
     get: function() {
@@ -23,19 +26,29 @@ Object.defineProperty(Prorogram.prototype, "action", {
     }
 });
 
-Prorogram.prototype.create = function create(opts) {
-    return new Prorogram(opts);
-};
+Object.defineProperty(Prorogram.prototype, "required", {
+    enumerable: false,
+    get: function() {
+        return this.opts.required;
+    },
+    set: function(reqd) {
+        this.opts.required = reqd;
+    }
+});
 
 
 // Main API Methods
+
+Prorogram.prototype.create = function create(opts) {
+    return new Prorogram(opts);
+};
 
 Prorogram.prototype.option = function(flag_name, opts, fn) {
 
     opts = mergeOpts(opts, fn);
 
     if (typeof flag_name !== 'string') {
-        throw new Error("Hey prorogram developer: You must specify at least a flag name when setting an option for your program");
+        throw new Error("Missing Flag Name");
     }
 
     opts.flag_name = flag_name = clearLeadingDashes(flag_name);
@@ -52,17 +65,16 @@ Prorogram.prototype.command = function(command_name, opts, fn) {
     opts = mergeOpts(opts, fn);
 
     if (typeof command_name !== 'string') {
-        throw new Error("Hey prorogram developer: You must specify at least a command name when setting a command for your program");
+        throw new Error("Missing Command Name");
     }
 
     opts.command_name = command_name;
     opts.description = opts.description || '';
 
-    this.commands[command_name] = this.createProrogram(opts);
+    this.commands[command_name] = this.create(opts);
 
     return this.commands[command_name];
 };
-
 
 Prorogram.prototype.parse = function(argv) {
 
@@ -81,6 +93,8 @@ Prorogram.prototype.parse = function(argv) {
 };
 
 
+// Core Functional Evaluation Methods
+
 function evalFlags(program, args, options) {
 
     var value = null,
@@ -94,7 +108,7 @@ function evalFlags(program, args, options) {
 
         if (value) {
             if (flag.required && value === true) {
-                err = new Error('Flag "' + flag_name + '" requires a value: ' + flag.required);
+                err = new Error('Required argument <' + flag.required + '> missing for flag: \'--' + flag_name  + '\'');
             } else {
                 err = null;
             }
@@ -108,13 +122,12 @@ function evalFlags(program, args, options) {
     }
 }
 
-
 function evalCmd(program, parse_args, argv, commands) {
 
     var possible_commands = parse_args._,
         command,
         possible,
-        subargs,
+        remaining_args,
         err;
 
     for (var i = 0; i < possible_commands.length; i++) {
@@ -128,22 +141,21 @@ function evalCmd(program, parse_args, argv, commands) {
                 command = commands[command_name];
 
                 if (command.opts.required && possible_commands[i+1] === undefined) {
-                    err = new Error('Command "' + command_name + '" requires a value: ' + command.required);
+                    err = new Error('Required argument <' + command.opts.required + '> missing for command: \'' + command_name + '\'');
                 } else {
                     err = null;
                 }
 
-                subargs = argv.slice(i);
-                command.parse(subargs);
+                remaining_args = argv.slice(i);
+                command.parse(remaining_args);
 
                 if (typeof command.action === 'function') {
-                    command.action(err, subargs);
+                    command.action(err, remaining_args);
                 }
                 return true;
             }
         }
     }
-
     return false;
 }
 
@@ -151,25 +163,13 @@ function evalCmd(program, parse_args, argv, commands) {
 // Extra Sauce API Methods
 
 Prorogram.prototype.rebuildArgString = function(parsed_args) {
-    return this.unparse(parsed_args, 'string');
+    return unparse(parsed_args).command_string;
 };
 
 Prorogram.prototype.rebuildArgArray = function(parsed_args) {
-    return this.unparse(parsed_args, 'array');
+    return unparse(parsed_args);
 };
 
-
-Prorogram.prototype.renderFlagDetails = function(flag_name) {
-
-    var flag = this.options[flag_name],
-        str = '';
-
-    str += flag.shortcut ? '-' + flag.shortcut + ', ' : '    ';
-    str += '--' + flag_name;
-    str += ' ' + (flag.required ? '<' + flag.required + '> ' : (flag.optional ? '[' + flag.optional + '] ' : ' '));
-
-    return str;
-};
 
 function createShortcut(shortcut, flag_name, options) {
 
@@ -216,5 +216,6 @@ function mergeOpts(opts, fn) {
 
     return opts;
 }
+
 
 module.exports = exports = new Prorogram();

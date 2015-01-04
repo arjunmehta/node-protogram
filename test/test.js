@@ -160,11 +160,11 @@ exports['Action Execution'] = function(test) {
 };
 
 
-exports['Required'] = function(test) {
+exports['Flag and Required'] = function(test) {
 
     test.expect(2);
 
-    var another_new_prorogram = prorogram.create(),
+    var new_prorogram = prorogram.create(),
         executed = 0,
         fake_argv = [
             "node",
@@ -174,18 +174,21 @@ exports['Required'] = function(test) {
             "297261"
         ];
 
-    another_new_prorogram.option('good', {
+    new_prorogram.option('good', {
         required: 'some string',
         action: function(err, value) {
+
+            // console.log("GOOD ERROR SHOULD BE", err, value);
+
             if (err) {
-                test.equal(JSON.stringify(err), JSON.stringify(new Error('Flag "good" requires a value: some string]')));
+                test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <some string> missing for flag: \'--good\'').message)));
                 executed++;
                 testDone();
             }
         }
     });
 
-    another_new_prorogram.option('user', {
+    new_prorogram.option('user', {
         action: function(err, value) {
             test.equal(value, 297261);
             executed++;
@@ -193,11 +196,100 @@ exports['Required'] = function(test) {
         }
     });
 
-    another_new_prorogram.parse(fake_argv);
+    new_prorogram.parse(fake_argv);
 
     // console.log(prorogram);
     function testDone() {
         if (executed == 2) {
+            test.done();
+        }
+    }
+};
+
+
+exports['Set Command'] = function(test) {
+
+    var expected = 2;
+
+    test.expect(expected);
+
+    var new_prorogram = prorogram.create(),
+        executed = 0,
+        fake_argv = [
+            "node",
+            "/Users/arjun/Working/node-prorogram/example/example.js",
+            "test",
+            "--fail",
+            "297261"
+        ];
+
+
+    new_prorogram.option('--fail', {
+        action: function(err, args) {
+            test.equal(true, false); // force fail
+        }
+    });
+
+    new_prorogram.command('test', {
+        action: function(err, args) {
+            // console.log("TEST EXECUTED???", args);
+            test.equal(true, true);
+            testDone();
+        }
+    });
+
+    test.equal(typeof new_prorogram.commands.test, 'object');
+
+
+    new_prorogram.parse(fake_argv);
+
+    // console.log(prorogram);
+    function testDone() {
+        executed++;
+        if (executed == 1) {
+            test.done();
+        }
+    }
+};
+
+exports['Command Required'] = function(test) {
+
+    var expected = 1;
+
+    test.expect(expected);
+
+    var new_prorogram = prorogram.create(),
+        executed = 0,
+        fake_argv = [
+            "node",
+            "/Users/arjun/Working/node-prorogram/example/example.js",
+            "test",
+            "--fail",
+            "297261"
+        ];
+
+
+    new_prorogram.option('--fail', {
+        action: function(err, args) {
+            test.equal(true, false); // force fail
+        }
+    });
+
+    new_prorogram.command('test', {
+        required: 'filename',
+        action: function(err, args) {
+            // console.log("TEST EXECUTED???", err, args);
+            test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <filename> missing for command: \'test\'').message)));
+            testDone();
+        }
+    });
+
+    new_prorogram.parse(fake_argv);
+
+    // console.log(prorogram);
+    function testDone() {
+        executed++;
+        if (executed == 1) {
             test.done();
         }
     }
