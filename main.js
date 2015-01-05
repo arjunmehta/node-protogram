@@ -83,7 +83,6 @@ Prorogram.prototype.command = function(command_name, opts, fn) {
     }
 
     opts.command_name = command_name;
-    opts.description = opts.description || '';
     opts.prorogram = this;
 
     this.commands[command_name] = this.create(opts);
