@@ -232,4 +232,6 @@ function mergeOpts(opts, fn) {
 }
 
 
-module.exports = exports = new Prorogram();
+module.exports = exports = new Prorogram({
+    root: true
+});
