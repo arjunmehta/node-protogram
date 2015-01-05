@@ -2,7 +2,11 @@ var subarg = require('subarg');
 
 
 function Prorogram(opts) {
-    this.opts = opts || {};
+    
+    Object.defineProperty(this, opts, {
+        enumerable: false,
+        value: opts || {}
+    });
 
     this.options = {};
     this.commands = {};
@@ -17,7 +21,7 @@ function Prorogram(opts) {
 // Prototype Setter/Getter Properties
 
 Object.defineProperty(Prorogram.prototype, "action", {
-    enumerable: false,
+    enumerable: true,
     get: function() {
         return this.opts.action;
     },
@@ -27,12 +31,22 @@ Object.defineProperty(Prorogram.prototype, "action", {
 });
 
 Object.defineProperty(Prorogram.prototype, "required", {
-    enumerable: false,
+    enumerable: true,
     get: function() {
         return this.opts.required;
     },
     set: function(reqd) {
         this.opts.required = reqd;
+    }
+});
+
+Object.defineProperty(Prorogram.prototype, "description", {
+    enumerable: true,
+    get: function() {
+        return this.opts.description;
+    },
+    set: function(desc) {
+        this.opts.description = desc;
     }
 });
 
@@ -110,7 +124,7 @@ function evalFlags(program, args, options) {
 
         if (value) {
             if (flag.required && value === true) {
-                err = new Error('Required argument <' + flag.required + '> missing for flag: \'--' + flag_name  + '\'');
+                err = new Error('Required argument <' + flag.required + '> missing for flag: \'--' + flag_name + '\'');
             } else {
                 err = null;
             }
@@ -142,8 +156,8 @@ function evalCmd(program, parse_args, argv, commands) {
 
                 command = commands[command_name];
 
-                if (command.opts.required && possible_commands[i+1] === undefined) {
-                    err = new Error('Required argument <' + command.opts.required + '> missing for command: \'' + command_name + '\'');
+                if (command.required && possible_commands[i + 1] === undefined) {
+                    err = new Error('Required argument <' + command.required + '> missing for command: \'' + command_name + '\'');
                 } else {
                     err = null;
                 }
