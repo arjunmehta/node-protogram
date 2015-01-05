@@ -2,8 +2,8 @@ var subarg = require('subarg');
 
 
 function Prorogram(opts) {
-    
-    Object.defineProperty(this, opts, {
+
+    Object.defineProperty(this, 'opts', {
         enumerable: false,
         value: opts || {}
     });
