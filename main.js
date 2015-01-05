@@ -116,7 +116,7 @@ function evalFlags(program, args, options) {
             program.selected[flag_name] = value;
 
             if (typeof flag.action === 'function') {
-                flag.action(err, value);
+                flag.action(err, value, program);
             }
         }
     }
@@ -150,7 +150,7 @@ function evalCmd(program, parse_args, argv, commands) {
                 command.parse(remaining_args);
 
                 if (typeof command.action === 'function') {
-                    command.action(err, remaining_args);
+                    command.action(err, remaining_args, program);
                 }
                 return true;
             }

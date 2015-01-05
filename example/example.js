@@ -2,16 +2,16 @@ var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 
 var columnify = require('columnify');
-var program = require('../main');
+var prorogram = require('../main');
+var help = require('prorogram-help');
+
 
 var pjson = require('../package.json');
 
 console.log(JSON.stringify(process.argv));
 
-program.option('--help', {
-        shortcut: '-h',
-        description: 'display usage information'
-    }, displayHelp)
+prorogram
+    .option('--help', help)
     .option('--rebuild_command', {
         description: 'rebuild the original command',
         action: rebuildCommand
@@ -32,13 +32,13 @@ program.option('--help', {
         action: testSubcontext
     });
 
-program.option('--somethingElse');
+prorogram.option('--somethingElse');
 
-program.command('run', {
+prorogram.command('run', {
     alias: 'exec',
     required: 'filename',
     description: '',
-    action: function(err, args){
+    action: function(err, args) {
 
     }
 }).option('--new', {
@@ -47,35 +47,13 @@ program.command('run', {
     }
 });
 
-program.parse(process.argv);
+prorogram.parse(process.argv);
 
-
-function displayHelp(err, value) {
-
-    var display = [],
-        flag;
-
-    console.log('\n  ' + pjson.name + ' v' + pjson.version);
-    console.log('  Usage: node example/example.js [options]\n');
-
-    for (var flag_name in program.options) {
-        flag = program.options[flag_name];
-        display.push({
-            ' ': ' ',
-            flag: program.renderFlagDetails(flag_name),
-            description: flag.description
-        });
-    }
-
-    console.log(columnify(display, {
-        columnSplitter: '  '
-    }), "\n");
-}
 
 function executeCommand(err, value) {
     if (err) throw err;
 
-    var command = program.buildExecString(value);
+    var command = prorogram.buildExecString(value);
     console.log("executing command", command);
 
     exec(command, function(error, stdout, stderr) {
@@ -86,14 +64,14 @@ function executeCommand(err, value) {
 }
 
 function rebuildCommand(err, value) {
-    var originalCommand = program.buildExecString(program.raw_arguments);
+    var originalCommand = prorogram.buildExecString(prorogram.raw_arguments);
     console.log("Original command", originalCommand);
 }
 
 function spawnCommand(err, value) {
     if (err) throw err;
 
-    var arr = program.buildSpawnArray(value);
+    var arr = prorogram.buildSpawnArray(value);
     console.log("spawing from array", arr);
 
     var little_one = spawn(arr[0], arr.slice(1), {
@@ -106,13 +84,13 @@ function testSubcontext(err, value) {
 
     console.log("SUB CONTEXT RAW PARSED VALUE", JSON.stringify(value));
 
-    var new_program = program.createProgram();
+    var new_prorogram = prorogram.createProgram();
 
-    new_program.option('--good', {
+    new_prorogram.option('--good', {
         action: function(err, value) {
             console.log("GOOD WORKED", value);
         }
     });
 
-    new_program.parse(value);
+    new_prorogram.parse(value);
 }

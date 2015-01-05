@@ -4,7 +4,7 @@
 
 ![prorogram title image](https://raw.githubusercontent.com/arjunmehta/node-prorogram/image/image/prorogram.png)
 
-Recursively create command-line programs and sub-programs. Easily handle arguments and sub-commands without all the fat. Some things this module provides:
+A node.js module to **recursively create command-line programs and sub-programs**. Easily handle arguments and sub-commands without all the fat. Some things this module provides:
 
 - **a minimal, scalable interface**
 - **control over the handling of argument flags and sub-commands**
@@ -265,19 +265,18 @@ Let's say we want to spawn another process with values passed into our program:
 ```javascript
 var spawn = require(child_process).spawn;
 
-prorogram.option('--spawn', {
+prorogram.command('spawn', {
     description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code) (ex. --execute [ ls -l ./ ])',
     required: 'command string',
     action: spawnCommand
 });
 
-function spawnCommand(err, value) {
+function spawnCommand(err, args) {
     if (err) throw err;
 
-    var arr = prorogram.rebuildArgArray(value);
-    console.log("spawing from array", arr);
+    console.log("spawing from array", args);
 
-    var little_one = spawn(arr[0], arr.slice(1), {
+    var little_one = spawn(args[0], args.slice(1), {
         stdio: "inherit"
     });
 }
