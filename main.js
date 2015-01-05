@@ -67,7 +67,6 @@ Prorogram.prototype.option = function(flag_name, opts, fn) {
 
     opts.flag_name = flag_name = clearLeadingDashes(flag_name);
     opts.shortcut = createShortcut(opts.shortcut, flag_name, this.options);
-    opts.description = opts.description || '';
     opts.prorogram = this;
 
     this.options[flag_name] = opts;
