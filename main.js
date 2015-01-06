@@ -67,7 +67,7 @@ Prorogram.prototype.option = function(flag_name, opts, fn) {
 
     opts.flag_name = flag_name = clearLeadingDashes(flag_name);
     opts.shortcut = createShortcut(opts.shortcut, flag_name, this.options);
-    opts.prorogram = this;
+    opts.parent_command = this;
 
     this.options[flag_name] = opts;
 
@@ -83,7 +83,7 @@ Prorogram.prototype.command = function(command_name, opts, fn) {
     }
 
     opts.command_name = command_name;
-    opts.prorogram = this;
+    opts.parent_command = this;
 
     this.commands[command_name] = this.create(opts);
 
