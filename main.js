@@ -142,7 +142,9 @@ function evalFlags(program, args, options) {
 
             program.selected[flag_name] = value;
 
-            if (typeof flag.action === 'function') {
+            if (err !== null && typeof flag.error === 'function') {
+                flag.error(err, remaining_args, program);
+            } else if (typeof flag.action === 'function') {
                 flag.action(err, value, program);
             }
         }
@@ -176,9 +178,12 @@ function evalCmd(program, parse_args, argv, commands) {
                 remaining_args = argv.slice(i);
                 command.parse(remaining_args);
 
-                if (typeof command.action === 'function') {
+                if (err !== null && typeof command.error === 'function') {
+                    command.error(err, remaining_args, program);
+                } else if (typeof command.action === 'function') {
                     command.action(err, remaining_args, program);
                 }
+
                 return true;
             }
         }
