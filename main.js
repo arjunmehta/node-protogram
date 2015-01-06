@@ -175,6 +175,9 @@ function processUniversalCommand(global_command, program) {
         has_error = (global_command.error);
 
 
+    console.log("GLOBAL COMMAND", global_command);
+
+
     for (var command_name in program.commands) {
         addToCommand(program.commands[command_name],
             global_command,
