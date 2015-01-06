@@ -200,7 +200,7 @@ function addToCommand(command, global_command, global_options, global_commands, 
 
     for (var global_flag_name in global_options) {
         if (command.options[global_flag_name] === undefined) {
-            command.options[global_flag_name] = global_options[flag_name];
+            command.options[global_flag_name] = global_options[global_flag_name];
         }
     }
 
