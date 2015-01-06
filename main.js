@@ -157,76 +157,10 @@ function evaluateFlags(program, args, options) {
             program.selected[flag_name] = value;
 
             if (err !== null && typeof flag.error === 'function') {
-                flag.error(err, remaining_args, program);
+                flag.error(err, program);
             } else if (typeof flag.action === 'function') {
-                flag.action(err, value, program);
+                flag.action(value, program);
             }
-        }
-    }
-}
-
-
-function processUniversalCommand(global_command, program) {
-
-    var recursive = global_command.opts.recursive,
-        global_options = global_command.options,
-        global_commands = global_command.commands,
-        has_action = (typeof global_command.action === 'function'),
-        has_error = (typeof global_command.error === 'function');
-
-    for (var command_name in program.commands) {
-        addToCommand(program.commands[command_name],
-            global_command,
-            global_options,
-            global_commands,
-            has_action,
-            has_error,
-            recursive);
-    }
-
-    if (global_command.opts.includeRoot) {
-        addToCommand(program,
-            global_command,
-            global_options,
-            global_commands,
-            has_action,
-            has_error,
-            false);
-    }
-}
-
-function addToCommand(command, global_command, global_options, global_commands, recursive) {
-
-    for (var global_flag_name in global_options) {
-        if (command.options[global_flag_name] === undefined) {
-            command.options[global_flag_name] = global_options[global_flag_name];
-        }
-    }
-
-    for (var global_command_name in global_commands) {
-
-        if (recursive) {
-            addToCommand(command.commands[global_command_name],
-                global_command,
-                global_options,
-                global_commands,
-                has_action,
-                has_error,
-                recursive);
-        }
-
-        if (!command.action && has_action) {
-            command.action = global_command.action;
-            console.log("GLOBAL ACTION", global_command.action);
-        }
-
-        if (!command.error && has_error) {
-            command.error = global_command.error;
-            console.log("GLOBAL ERROR", global_command.error);
-        }
-
-        if (command.commands[global_command_name] === undefined) {
-            command.commands[global_command_name] = global_commands[global_command_name];
         }
     }
 }
@@ -239,8 +173,8 @@ function evaluateCommand(program, parse_args, argv, commands) {
         remaining_args,
         err;
 
-    if (program.commands['*']) {
-        processUniversalCommand(program.commands['*'], program);
+    if (commands['*']) {
+        processUniversalCommand(commands['*'], program);
     }
 
     for (var i = 0; i < possible_commands.length; i++) {
@@ -248,6 +182,8 @@ function evaluateCommand(program, parse_args, argv, commands) {
         possible = possible_commands[i];
 
         for (var command_name in commands) {
+
+            if (command_name === '*') continue;
 
             if (possible === command_name || possible === commands[command_name].alias) {
 
@@ -265,7 +201,7 @@ function evaluateCommand(program, parse_args, argv, commands) {
                 if (err !== null && typeof command.error === 'function') {
                     command.error(err, remaining_args, command);
                 } else if (typeof command.action === 'function') {
-                    command.action(err, remaining_args, command);
+                    command.action(remaining_args, command);
                 }
 
                 return true;
@@ -273,6 +209,70 @@ function evaluateCommand(program, parse_args, argv, commands) {
         }
     }
     return false;
+}
+
+
+function processUniversalCommand(global_command, program) {
+
+    var recursive = global_command.opts.recursive,
+        global_options = global_command.options,
+        global_commands = global_command.commands;
+
+    // console.log("ADDING UNIVERSAL COMMAND", program, global_command.opts, typeof global_command.action === 'function');
+
+    for (var command_name in program.commands) {
+
+        addToCommand(program.commands[command_name],
+            global_command,
+            global_options,
+            global_commands,
+            recursive);
+    }
+
+    if (global_command.opts.includeRoot) {
+        addToCommand(program,
+            global_command,
+            global_options,
+            global_commands,
+            false);
+    }
+}
+
+function addToCommand(command, global_command, global_options, global_commands, recursive) {
+
+    if (command.command_name === '*') {
+        return;
+    }
+
+    // console.log("MERGING Global COMMAND with", command.command_name);
+
+    for (var global_flag_name in global_options) {
+        if (command.options[global_flag_name] === undefined) {
+            command.options[global_flag_name] = global_options[global_flag_name];
+        }
+    }
+
+    for (var global_opt in global_command.opts) {
+        if (!command.opts[global_opt]) {
+            command.opts[global_opt] = global_command[global_opt];
+            // console.log("adding option", global_opt, "to: ", command.command_name);
+        }
+    }
+
+    for (var global_command_name in global_commands) {
+
+        if (recursive) {
+            addToCommand(command.commands[global_command_name],
+                global_command,
+                global_options,
+                global_commands,
+                recursive);
+        }
+
+        if (command.commands[global_command_name] === undefined) {
+            command.commands[global_command_name] = global_commands[global_command_name];
+        }
+    }
 }
 
 

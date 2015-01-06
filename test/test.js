@@ -95,7 +95,6 @@ exports['Parse Arguments'] = function(test) {
     test.equal(prorogram.parsed.e.a, 'something else');
     test.equal(prorogram.parsed.e.b, 276287);
 
-    // console.log(prorogram);
 
     test.done();
 };
@@ -134,7 +133,7 @@ exports['Action Execution'] = function(test) {
         ];
 
     new_prorogram.option('good', {
-        action: function(err, value) {
+        action: function(value) {
             test.equal(value, "a string variable");
             executed++;
             testDone();
@@ -142,7 +141,7 @@ exports['Action Execution'] = function(test) {
     });
 
     new_prorogram.option('user', {
-        action: function(err, value) {
+        action: function(value) {
             test.equal(value, 297261);
             executed++;
             testDone();
@@ -151,7 +150,6 @@ exports['Action Execution'] = function(test) {
 
     new_prorogram.parse(fake_argv);
 
-    // console.log(prorogram);
     function testDone() {
         if (executed == 2) {
             test.done();
@@ -176,20 +174,16 @@ exports['Flag and Required'] = function(test) {
 
     new_prorogram.option('good', {
         required: 'some string',
-        action: function(err, value) {
-
-            // console.log("GOOD ERROR SHOULD BE", err, value);
-
-            if (err) {
-                test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <some string> missing for flag: \'--good\'').message)));
-                executed++;
-                testDone();
-            }
+        action: function(value) {},
+        error: function(err) {
+            test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <some string> missing for flag: \'--good\'').message)));
+            executed++;
+            testDone();
         }
     });
 
     new_prorogram.option('user', {
-        action: function(err, value) {
+        action: function(value) {
             test.equal(value, 297261);
             executed++;
             testDone();
@@ -198,7 +192,6 @@ exports['Flag and Required'] = function(test) {
 
     new_prorogram.parse(fake_argv);
 
-    // console.log(prorogram);
     function testDone() {
         if (executed == 2) {
             test.done();
@@ -243,7 +236,6 @@ exports['Set Command'] = function(test) {
 
     new_prorogram.parse(fake_argv);
 
-    // console.log(prorogram);
     function testDone() {
         executed++;
         if (executed == 1) {
@@ -277,8 +269,10 @@ exports['Command Required'] = function(test) {
 
     new_prorogram.command('test', {
         required: 'filename',
-        action: function(err, args) {
+        action: function(args) {
             // console.log("TEST EXECUTED???", err, args);
+        },
+        error: function(err, args) {
             test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <filename> missing for command: \'test\'').message)));
             testDone();
         }
@@ -286,7 +280,6 @@ exports['Command Required'] = function(test) {
 
     new_prorogram.parse(fake_argv);
 
-    // console.log(prorogram);
     function testDone() {
         executed++;
         if (executed == 1) {
@@ -294,6 +287,55 @@ exports['Command Required'] = function(test) {
         }
     }
 };
+
+
+exports['Wildcard Command'] = function(test) {
+
+    var expected = 1;
+
+    test.expect(expected);
+
+    var new_prorogram = prorogram.create(),
+        executed = 0,
+        fake_argv = [
+            "node",
+            "/Users/arjun/Working/node-prorogram/example/example.js",
+            "test",
+            "--fail",
+            "297261"
+        ];
+
+
+    new_prorogram.option('--fail', {
+        action: function(err, args) {
+            test.equal(true, false); // force fail
+        }
+    });
+
+    new_prorogram.command('*', {
+        required: 'filename',
+        action: function(args) {
+            test.equal(false, true); // force fail
+        },
+        error: function(err, args) {
+            // console.log("TEST EXECUTED??? with ERROR", err, args);
+            test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <filename> missing for command: \'test\'').message)));
+            testDone();
+        }
+    });
+
+    new_prorogram.command('test');
+
+    new_prorogram.parse(fake_argv);
+
+    function testDone() {
+        executed++;
+        if (executed == 1) {
+            test.done();
+        }
+    }
+};
+
 
 
 exports['tearDown'] = function(done) {
