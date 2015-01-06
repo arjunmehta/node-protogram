@@ -108,7 +108,7 @@ Prorogram.prototype.command = function(command_name, opts, fn) {
     opts.command_name = command_name;
     opts.parent_command = this;
 
-    this.commands[command_name] = this.create(opts);
+    this.commands[command_name] = new Prorogram(opts);
 
     return this.commands[command_name];
 };
@@ -189,9 +189,9 @@ function evalCmd(program, parse_args, argv, commands) {
                 command.parse(remaining_args);
 
                 if (err !== null && typeof command.error === 'function') {
-                    command.error(err, remaining_args, program);
+                    command.error(err, remaining_args, command);
                 } else if (typeof command.action === 'function') {
-                    command.action(err, remaining_args, program);
+                    command.action(err, remaining_args, command);
                 }
 
                 return true;
