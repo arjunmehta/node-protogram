@@ -174,10 +174,6 @@ function processUniversalCommand(global_command, program) {
         has_action = (global_command.action),
         has_error = (global_command.error);
 
-
-    console.log("GLOBAL COMMAND", global_command);
-
-
     for (var command_name in program.commands) {
         addToCommand(program.commands[command_name],
             global_command,
@@ -221,10 +217,12 @@ function addToCommand(command, global_command, global_options, global_commands, 
 
         if (!command.action && global_command.action) {
             command.action = global_command.action;
+            console.log("GLOBAL ACTION", global_command.action);
         }
 
         if (!command.error && global_command.error) {
             command.error = global_command.error;
+            console.log("GLOBAL ERROR", global_command.error);
         }
 
         if (command.commands[global_command_name] === undefined) {
