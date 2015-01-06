@@ -85,7 +85,7 @@ Prorogram.prototype.option = function(flag_name, opts, fn) {
     opts = mergeOpts(opts, fn);
 
     if (typeof flag_name !== 'string') {
-        throw new Error("Missing Flag Name");
+        throw new Error("Missing Option Flag Name");
     }
 
     opts.flag_name = flag_name = clearLeadingDashes(flag_name);
@@ -93,6 +93,10 @@ Prorogram.prototype.option = function(flag_name, opts, fn) {
     opts.parent_command = this;
 
     this.options[flag_name] = opts;
+
+    if (typeof opts.added === 'function') {
+        opts.added(this, this.options[flag_name]);
+    }
 
     return this;
 };
@@ -124,15 +128,15 @@ Prorogram.prototype.parse = function(argv) {
         _: argv
     };
 
-    if (!evalCmd(this, this.parsed, argv, this.commands)) {
-        evalFlags(this, this.parsed, this.options);
+    if (!evaluateCommand(this, this.parsed, argv, this.commands)) {
+        evaluateFlags(this, this.parsed, this.options);
     }
 };
 
 
 // Core Functional Evaluation Methods
 
-function evalFlags(program, args, options) {
+function evaluateFlags(program, args, options) {
 
     var value = null,
         err = null,
@@ -161,13 +165,82 @@ function evalFlags(program, args, options) {
     }
 }
 
-function evalCmd(program, parse_args, argv, commands) {
+
+function processUniversalCommand(global_command, program) {
+
+    var recursive = global_command.opts.recursive,
+        global_options = global_command.options,
+        global_commands = global_command.commands,
+        has_action = (global_command.action),
+        has_error = (global_command.error);
+
+
+    for (var command_name in program.commands) {
+        addToCommand(program.commands[command_name],
+            global_command,
+            global_options,
+            global_commands,
+            has_action,
+            has_error,
+            recursive);
+    }
+
+    if (global_command.opts.includeRoot) {
+        addToCommand(program,
+            global_command,
+            global_options,
+            global_commands,
+            has_action,
+            has_error,
+            false);
+    }
+}
+
+function addToCommand(command, global_command, global_options, global_commands, recursive) {
+
+    for (var global_flag_name in global_options) {
+        if (command.options[global_flag_name] === undefined) {
+            command.options[global_flag_name] = global_options[flag_name];
+        }
+    }
+
+    for (var global_command_name in global_commands) {
+
+        if (recursive) {
+            addToCommand(command.commands[global_command_name],
+                global_command,
+                global_options,
+                global_commands,
+                has_action,
+                has_error,
+                recursive);
+        }
+
+        if (!command.action && global_command.action) {
+            command.action = global_command.action;
+        }
+
+        if (!command.error && global_command.error) {
+            command.error = global_command.error;
+        }
+
+        if (command.commands[global_command_name] === undefined) {
+            command.commands[global_command_name] = global_commands[global_command_name];
+        }
+    }
+}
+
+function evaluateCommand(program, parse_args, argv, commands) {
 
     var possible_commands = parse_args._,
         command,
         possible,
         remaining_args,
         err;
+
+    if (program.commands['*']) {
+        processUniversalCommand(program.commands['*'], program);
+    }
 
     for (var i = 0; i < possible_commands.length; i++) {
 
