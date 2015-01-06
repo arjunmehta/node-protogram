@@ -17,8 +17,21 @@ function Prorogram(opts) {
     this.selected = {};
 }
 
-
 // Prototype Setter/Getter Properties
+
+Object.defineProperty(Prorogram.prototype, "command_name", {
+    enumerable: true,
+    get: function() {
+        return this.opts.command_name;
+    }
+});
+
+Object.defineProperty(Prorogram.prototype, "parent_command", {
+    enumerable: true,
+    get: function() {
+        return this.opts.parent_command;
+    }
+});
 
 Object.defineProperty(Prorogram.prototype, "action", {
     enumerable: true,
