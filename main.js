@@ -157,7 +157,7 @@ function evaluateFlags(program, args, options) {
             program.selected[flag_name] = value;
 
             if (err !== null && typeof flag.error === 'function') {
-                flag.error(err, program);
+                flag.error(err, value, program);
             } else if (typeof flag.action === 'function') {
                 flag.action(value, program);
             }

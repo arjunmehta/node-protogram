@@ -337,6 +337,54 @@ exports['Wildcard Command'] = function(test) {
 };
 
 
+exports['Wildcard Command Including Root'] = function(test) {
+
+    var expected = 1;
+
+    test.expect(expected);
+
+    var new_prorogram = prorogram.create(),
+        executed = 0,
+        fake_argv = [
+            "node",
+            "/Users/arjun/Working/node-prorogram/example/example.js",
+            "test",
+            "--fail",
+            "297261"
+        ];
+
+
+    new_prorogram.option('--fail', {
+        action: function(err, args) {
+            test.equal(true, false); // force fail
+        }
+    });
+
+    new_prorogram.command('*', {
+        required: 'filename',
+        includeRoot: true,
+        action: function(args) {
+            test.equal(false, true); // force fail
+        },
+        error: function(err, args) {
+            // console.log("TEST EXECUTED??? with ERROR", err, args);
+            test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <filename> missing for command: \'test\'').message)));
+            testDone();
+        }
+    });
+
+    new_prorogram.command('test');
+
+    new_prorogram.parse(fake_argv);
+
+    function testDone() {
+        executed++;
+        if (executed == 1) {
+            test.done();
+        }
+    }
+};
+
 
 exports['tearDown'] = function(done) {
     done();
