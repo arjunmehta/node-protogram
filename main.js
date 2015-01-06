@@ -171,8 +171,8 @@ function processUniversalCommand(global_command, program) {
     var recursive = global_command.opts.recursive,
         global_options = global_command.options,
         global_commands = global_command.commands,
-        has_action = (global_command.action),
-        has_error = (global_command.error);
+        has_action = (typeof global_command.action === 'function'),
+        has_error = (typeof global_command.error === 'function');
 
     for (var command_name in program.commands) {
         addToCommand(program.commands[command_name],
@@ -215,12 +215,12 @@ function addToCommand(command, global_command, global_options, global_commands, 
                 recursive);
         }
 
-        if (!command.action && global_command.action) {
+        if (!command.action && has_action) {
             command.action = global_command.action;
             console.log("GLOBAL ACTION", global_command.action);
         }
 
-        if (!command.error && global_command.error) {
+        if (!command.error && has_error) {
             command.error = global_command.error;
             console.log("GLOBAL ERROR", global_command.error);
         }
