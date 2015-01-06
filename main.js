@@ -43,6 +43,16 @@ Object.defineProperty(Prorogram.prototype, "action", {
     }
 });
 
+Object.defineProperty(Prorogram.prototype, "error", {
+    enumerable: true,
+    get: function() {
+        return this.opts.error;
+    },
+    set: function(fn) {
+        this.opts.error = fn;
+    }
+});
+
 Object.defineProperty(Prorogram.prototype, "required", {
     enumerable: true,
     get: function() {
