@@ -177,12 +177,12 @@ Prorogram.prototype.evaluate = function(parsed) {
         }
     }
 
-    if (typeof this.action === 'function') {
-        this.action(args, this);
-    }
-
     if (terminal === true) {
         this.evaluateFlags(parsed);
+    }
+
+    if (typeof this.action === 'function') {
+        this.action(args, this);
     }
 };
 
@@ -205,8 +205,7 @@ Prorogram.prototype.evaluateFlags = function(parsed) {
 
             if (err !== null) {
                 if (typeof flag.error === 'function') {
-                    flag.error(err, parsed, this);
-                    
+                    flag.error(err, parsed, this);                    
                 }
                 continue;
             }

@@ -12,6 +12,7 @@ console.log(JSON.stringify(process.argv));
 
 prorogram
     .option('--help', help)
+    .option('--version', version)
     .option('--rebuild_command', {
         description: 'rebuild the original command',
         action: rebuildCommand
@@ -38,11 +39,11 @@ prorogram.command('run', {
     alias: 'exec',
     required: 'filename',
     description: '',
-    action: function(err, args) {
+    action: function(args) {
 
     }
 }).option('--new', {
-    action: function(err, val) {
+    action: function(val) {
         console.log("NEW NEW NEW", val);
     }
 });

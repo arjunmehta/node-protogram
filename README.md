@@ -29,19 +29,21 @@ var prorogram = require('prorogram');
 Add option flags to your prorogram. Shortcuts will automatically be made based on the first character of the specified option name.
 
 ```javascript
-prorogram.option('--generic').option('--another_option');
+prorogram.option('--optionA').option('--optionB');
 ```
 
 OR take more control over how you want to handle flags, whether they need required or optional values, and how you want to handle them.
 
 ```javascript
-prorogram.option('--generic', {
-    shortcut: '-g',
+prorogram.option('--optionA', {
+    shortcut: '-a',
     description: 'Use a generic flag to do anything',
-    required: 'channel name',
-    action: function(err, value){
-        if(err) console.error('Error!', err)
-        else console.log("generic value is:", value);
+    required: 'file name',
+    action: function(value){
+        console.log("generic value is:", value);
+    },
+    error: function(err, args){
+        console.error("Error", err.message, "for arguments", args);
     }
 });
 ```
@@ -55,9 +57,11 @@ var sub_prorogram = prorogram.command('run', {
     alias: 'execute',
     description: 'execute a command',
     required: 'path name',
-    action: function(err, args){
-        if(err) console.error('Error!', err)
-        else console.log("arguments used for this sub program", args);
+    action: function(args){
+        console.log("executed was executed:", args);
+    },
+    error: function(err, args){
+        console.error("Error", err.message, "for arguments", args);
     }
 });
 ```
