@@ -1,11 +1,14 @@
+var path = require('path');
 var subarg = require('subarg');
 
 
 function Prorogram(opts) {
 
+    opts = opts || {};
+
     Object.defineProperty(this, 'opts', {
         enumerable: false,
-        value: opts || {}
+        value: opts
     });
 
     this.options = {};
@@ -14,7 +17,7 @@ function Prorogram(opts) {
     this.raw_arguments = {};
     this.parsed = {};
 
-    this.selected = {};
+    this.flagged = {};
 }
 
 // Prototype Setter/Getter Properties
@@ -74,7 +77,7 @@ Object.defineProperty(Prorogram.prototype, "description", {
 });
 
 
-// Main API Methods
+// Core API Methods
 
 Prorogram.prototype.create = function create(opts) {
     return new Prorogram(opts);
@@ -82,12 +85,11 @@ Prorogram.prototype.create = function create(opts) {
 
 Prorogram.prototype.option = function(flag_name, opts, fn) {
 
-    opts = mergeOpts(opts, fn);
-
     if (typeof flag_name !== 'string') {
         throw new Error("Missing Option Flag Name");
     }
 
+    opts = mergeOpts(opts, fn);
     opts.flag_name = flag_name = clearLeadingDashes(flag_name);
     opts.shortcut = createShortcut(opts.shortcut, flag_name, this.options);
     opts.parent_command = this;
@@ -103,18 +105,24 @@ Prorogram.prototype.option = function(flag_name, opts, fn) {
 
 Prorogram.prototype.command = function(command_name, opts, fn) {
 
-    opts = mergeOpts(opts, fn);
-
     if (typeof command_name !== 'string') {
         throw new Error("Missing Command Name");
     }
 
+    var command;
+    opts = mergeOpts(opts, fn);
     opts.command_name = command_name;
     opts.parent_command = this;
 
-    this.commands[command_name] = new Prorogram(opts);
+    command = new Prorogram(opts);
 
-    return this.commands[command_name];
+    if (command_name === '*') {
+        this.wildcard = command;
+    } else {
+        this.commands[command_name] = command;
+    }
+
+    return command;
 };
 
 Prorogram.prototype.parse = function(argv) {
@@ -123,157 +131,111 @@ Prorogram.prototype.parse = function(argv) {
         argv = this.rebuildArgArray(argv);
     }
 
+    if (this.opts.root) {
+        this.opts.command_name = path.basename(argv[1], '.js');
+    }
+
     this.parsed = subarg(argv);
     this.raw_arguments = {
         _: argv
     };
+    this.evaluate(this.parsed);
+};
 
-    if (!evaluateCommand(this, this.parsed, argv, this.commands)) {
-        evaluateFlags(this, this.parsed, this.options);
+Prorogram.prototype.evaluate = function(parsed) {
+
+    var possible_commands = parsed._,
+        err = null,
+        terminal = true,
+        args = [],
+        command;
+
+    if (this.opts.root) {
+        possible_commands.splice(0, 2);
+    }
+
+    args = possible_commands.slice(0);
+
+    this.applyWildCard();
+    err = evalRequiredError((this.required && possible_commands.length === 0), this.required, 'command', this.command_name);
+
+    if (err !== null) {
+        if (typeof this.error === 'function') {
+            this.error(err, parsed, this);
+        }
+        return;
+    }
+
+    for (var i = 0; i < possible_commands.length; i++) {
+        command = this.commands[possible_commands[i]];
+        if (command) {
+            args = parsed._.splice(0, i + 1).pop();
+            terminal = false;
+            command.evaluate(parsed);
+            break;
+        }
+    }
+
+    if (typeof this.action === 'function') {
+        this.action(args, this);
+    }
+
+    if (terminal === true) {
+        this.evaluateFlags(parsed);
     }
 };
 
-
-// Core Functional Evaluation Methods
-
-function evaluateFlags(program, args, options) {
+Prorogram.prototype.evaluateFlags = function(parsed) {
 
     var value = null,
         err = null,
-        flag = null;
+        flag = null,
+        options = this.options;
 
     for (var flag_name in options) {
 
         flag = options[flag_name];
-        value = args[flag_name] || args[flag.shortcut];
+        value = parsed[flag.shortcut] || parsed[flag_name];
 
         if (value) {
-            if (flag.required && value === true) {
-                err = new Error('Required argument <' + flag.required + '> missing for flag: \'--' + flag_name + '\'');
-            } else {
-                err = null;
-            }
+            this.flagged[flag_name] = value;
 
-            program.selected[flag_name] = value;
+            err = evalRequiredError((flag.required && value === true), flag.required, 'flag', '--' + flag_name);
 
-            if (err !== null && typeof flag.error === 'function') {
-                flag.error(err, value, program);
-            } else if (typeof flag.action === 'function') {
-                flag.action(value, program);
-            }
-        }
-    }
-}
-
-function evaluateCommand(program, parse_args, argv, commands) {
-
-    var possible_commands = parse_args._,
-        command,
-        possible,
-        remaining_args,
-        err;
-
-    if (commands['*']) {
-        processUniversalCommand(commands['*'], program);
-    }
-
-    for (var i = 0; i < possible_commands.length; i++) {
-
-        possible = possible_commands[i];
-
-        for (var command_name in commands) {
-
-            if (command_name === '*') continue;
-
-            if (possible === command_name || possible === commands[command_name].alias) {
-
-                command = commands[command_name];
-
-                if (command.required && possible_commands[i + 1] === undefined) {
-                    err = new Error('Required argument <' + command.required + '> missing for command: \'' + command_name + '\'');
-                } else {
-                    err = null;
+            if (err !== null) {
+                if (typeof flag.error === 'function') {
+                    flag.error(err, parsed, this);
                 }
+                continue;
+            }
 
-                remaining_args = argv.slice(i);
-                command.parse(remaining_args);
-
-                if (err !== null && typeof command.error === 'function') {
-                    command.error(err, remaining_args, command);
-                } else if (typeof command.action === 'function') {
-                    command.action(remaining_args, command);
-                }
-
-                return true;
+            if (typeof flag.action === 'function') {
+                flag.action(value, this);
             }
         }
     }
-    return false;
-}
+};
 
+Prorogram.prototype.applyWildCard = function() {
 
-function processUniversalCommand(global_command, program) {
+    var wildcard = this.wildcard;
 
-    var recursive = global_command.opts.recursive,
-        global_options = global_command.options,
-        global_commands = global_command.commands;
+    if (!wildcard) return;
 
-    // console.log("ADDING UNIVERSAL COMMAND", program, global_command.opts, typeof global_command.action === 'function');
+    // if recursive add wildcard to sub commands BEFORE the wildcard commands are added to prevent infinite recursion
 
-    for (var command_name in program.commands) {
-
-        addToCommand(program.commands[command_name],
-            global_command,
-            global_options,
-            global_commands,
-            recursive);
-    }
-
-    if (global_command.opts.includeRoot) {
-        addToCommand(program,
-            global_command,
-            global_options,
-            global_commands,
-            false);
-    }
-}
-
-function addToCommand(command, global_command, global_options, global_commands, recursive) {
-
-    if (command.command_name === '*') {
-        return;
-    }
-
-    // console.log("MERGING Global COMMAND with", command.command_name);
-
-    for (var global_flag_name in global_options) {
-        if (command.options[global_flag_name] === undefined) {
-            command.options[global_flag_name] = global_options[global_flag_name];
+    if (wildcard.recursive || this.opts.root) {
+        for (var command_name in this.commands) {
+            this.commands[command_name].wildcard = wildcard;
         }
     }
 
-    for (var global_opt in global_command.opts) {
-        if (!command.opts[global_opt]) {
-            command.opts[global_opt] = global_command[global_opt];
-            // console.log("adding option", global_opt, "to: ", command.command_name);
-        }
+    if (!this.opts.root || (this.opts.root && wildcard.opts.includeRoot)) {
+        mergeProperties(this.commands, wildcard.commands);
+        mergeProperties(this.options, wildcard.options);
+        mergeProperties(this.opts, wildcard.opts);
     }
-
-    for (var global_command_name in global_commands) {
-
-        if (recursive) {
-            addToCommand(command.commands[global_command_name],
-                global_command,
-                global_options,
-                global_commands,
-                recursive);
-        }
-
-        if (command.commands[global_command_name] === undefined) {
-            command.commands[global_command_name] = global_commands[global_command_name];
-        }
-    }
-}
+};
 
 
 // Extra Sauce API Methods
@@ -286,6 +248,15 @@ Prorogram.prototype.rebuildArgArray = function(parsed_args) {
     return unparse(parsed_args);
 };
 
+
+// Core Helper Methods
+
+function evalRequiredError(condition, required, type, name) {
+    if (condition) {
+        return new Error('Required argument <' + required + '> missing for ' + type + ': \'' + name + '\'');
+    }
+    return null;
+}
 
 function createShortcut(shortcut, flag_name, options) {
 
@@ -331,6 +302,14 @@ function mergeOpts(opts, fn) {
     }
 
     return opts;
+}
+
+function mergeProperties(objectA, objectB) {
+    for (var prop in objectB) {
+        if (!objectA[prop]) {
+            objectA[prop] = objectB[prop];
+        }
+    }
 }
 
 
