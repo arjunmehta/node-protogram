@@ -206,6 +206,7 @@ Prorogram.prototype.evaluateFlags = function(parsed) {
             if (err !== null) {
                 if (typeof flag.error === 'function') {
                     flag.error(err, parsed, this);
+                    
                 }
                 continue;
             }
