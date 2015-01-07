@@ -112,13 +112,13 @@ Prorogram.prototype.command = function(command_name, opts, fn) {
     var command;
     opts = mergeOpts(opts, fn);
     opts.command_name = command_name;
-    opts.parent_command = this;
-
-    command = new Prorogram(opts);
 
     if (command_name === '*') {
+        command = new Prorogram(opts);
         this.wildcard = command;
     } else {
+        opts.parent_command = this;
+        command = new Prorogram(opts);
         this.commands[command_name] = command;
     }
 
