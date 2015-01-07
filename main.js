@@ -169,7 +169,8 @@ Prorogram.prototype.evaluate = function(parsed) {
     for (var i = 0; i < possible_commands.length; i++) {
         command = this.commands[possible_commands[i]];
         if (command) {
-            args = parsed._.splice(0, i + 1).pop();
+            args = parsed._.splice(0, i + 1);
+            args.pop();
             terminal = false;
             command.evaluate(parsed);
             break;
