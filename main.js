@@ -194,7 +194,7 @@ Protogram.prototype.evaluate = function(parsed) {
 
     if (err === null && typeof this.action === 'function') {
         this.action(args, flags);
-    } else if (err !== null && typeof this.error === 'function') {
+    } if (err !== null && typeof this.error === 'function') {
         this.error(err, parsed);
     }
 };

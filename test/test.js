@@ -507,7 +507,7 @@ exports['Call Action with "this" as the Command'] = function(test) {
 
 exports['Call Action and Don\'t Halt on Error'] = function(test) {
 
-    var expected = 5;
+    var expected = 3;
     test.expect(expected);
 
     var new_protogram = protogram.create({
@@ -530,14 +530,12 @@ exports['Call Action and Don\'t Halt on Error'] = function(test) {
         required: 'another value',
         action: function(args, flags) {
             if (flags) {
-                test.equal(flags.win, 297261);
-                testDone();
+                test.equal(false, 297261); // force fail
             }
-            test.equal(true, true);
-            testDone();
+            test.equal(false, true); // force fail : Action should not be called if there is an error
         },
         error: function(err, args) {
-            test.equal(true, true);
+            test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <another value> missing for command: \'win\'').message)));
             testDone();
         }
     }).option('--win', {
