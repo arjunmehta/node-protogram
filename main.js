@@ -149,6 +149,7 @@ Protogram.prototype.evaluate = function(parsed) {
         err = null,
         terminal = true,
         args = [],
+        flags = {},
         command;
 
     if (this.opts.root) {
@@ -158,7 +159,7 @@ Protogram.prototype.evaluate = function(parsed) {
     args = possible_commands.slice(0);
 
     this.applyWildCard();
-    
+
     err = evalRequiredError((this.required && possible_commands.length === 0), this.required, 'command', this.command_name);
 
     if (err !== null) {
@@ -180,11 +181,11 @@ Protogram.prototype.evaluate = function(parsed) {
     }
 
     if (terminal === true) {
-        this.evaluateFlags(parsed);
+        flags = this.evaluateFlags(parsed);
     }
 
     if (typeof this.action === 'function') {
-        this.action(args);
+        this.action(args, flags);
     }
 };
 
@@ -220,6 +221,8 @@ Protogram.prototype.evaluateFlags = function(parsed) {
             }
         }
     }
+
+    return this.flagged;
 };
 
 Protogram.prototype.applyWildCard = function() {

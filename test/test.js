@@ -453,10 +453,10 @@ exports['Call Action with "this" as the Command'] = function(test) {
 
 
     new_protogram.command('win', {
-        action: function(args) {
+        action: function(args, flags) {
 
-            if(this.flagged.win){
-                test.equal(this.flagged.win, 297261);
+            if(flags){
+                test.equal(flags.win, 297261);
             }
 
             test.equal(true, true);            
