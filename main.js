@@ -194,7 +194,8 @@ Protogram.prototype.evaluate = function(parsed) {
 
     if (err === null && typeof this.action === 'function') {
         this.action(args, flags);
-    } if (err !== null && typeof this.error === 'function') {
+    }
+    if (err !== null && typeof this.error === 'function') {
         this.error(err, parsed);
     }
 };
@@ -224,9 +225,7 @@ Protogram.prototype.evaluateFlags = function(parsed) {
                     flag.error.call(this, err, parsed);
                 }
                 continue;
-            }
-
-            if (typeof flag.action === 'function') {
+            } else if (typeof flag.action === 'function') {
                 flag.action.call(this, value);
             }
         }
