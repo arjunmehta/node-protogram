@@ -1,4 +1,6 @@
 var path = require('path');
+
+var unparse = require('unparse-args');
 var subarg = require('subarg');
 
 function create(opts) {
@@ -168,13 +170,11 @@ Protogram.prototype.evaluate = function(parsed) {
 
     err = evalRequiredError((this.required && possible_commands.length === 0), this.required, 'command', this.command_name);
 
-    if (err !== null) {
+    if (err !== null && this.opts.haltOnError) {
         if (typeof this.error === 'function') {
             this.error(err, parsed);
         }
-        if (this.opts.haltOnError === true) {
-            return;
-        }
+        return;
     }
 
     for (var i = 0; i < possible_commands.length; i++) {
@@ -192,8 +192,10 @@ Protogram.prototype.evaluate = function(parsed) {
         flags = this.evaluateFlags(parsed);
     }
 
-    if (typeof this.action === 'function') {
+    if (err === null && typeof this.action === 'function') {
         this.action(args, flags);
+    } else if (err !== null && typeof this.error === 'function') {
+        this.error(err, parsed);
     }
 };
 

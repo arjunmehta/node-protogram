@@ -22,7 +22,12 @@ npm install --save protogram
 ### Include
 
 ```javascript
-var program = require('protogram');
+var protogram = require('protogram');
+```
+
+### Create Your Program
+```javascript
+var program = protogram.create();
 ```
 
 ### Add Option Flags and Their Handlers
@@ -85,7 +90,7 @@ Try the example program included in the module to get some ideas of how to use t
 # Switch to the protogram module directory
 cd ./node_modules/protogram
 
-# install dependencies for the example
+# install the dependencies needed for the example
 npm install
 
 # run the example program and experiment
@@ -94,7 +99,9 @@ node ./example/example.js -h
 
 
 ## API
-### protogram.command(command_name, options)
+### program.create(command_name, options)
+
+### program.command(command_name, options)
 Add a sub-command to your program. The sub-command is a new instance of the `Protogram` object!
 
 - `command_name` **String**: Name of the sub-command to your program.
@@ -118,8 +125,8 @@ Set the `command_name` to `'*'` to apply universal settings to all sub-commands 
 
 ```
 
-### protogram.option(flag_name, options)
-Add a `Flag` as an option to your protogram.
+### program.option(flag_name, options)
+Add a `Flag` as an option to your program.
 
 - `flag_name` **String**: Name of the option of your program.
 - `options` Object:
@@ -161,37 +168,37 @@ program.option('--name', function(err, value){
 });
 ```
 
-### protogram.parse(argv)
-Pass in your full `process.argv` array into the `protogram.parse` method to begin parsing the command-line arguments.
+### program.parse(argv)
+Pass in your full `process.argv` array into the `program.parse` method to begin parsing the command-line arguments.
 
 ```javascript
 program.parse(process.argv);
 ```
 
-### protogram.flagged[flag]
-An object you can use to check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `protogram.parse`.
+### program.flagged[flag]
+An object you can use to check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `program.parse`.
 
 ```javascript
 if(program.flagged['name']){
-    console.log('the --name flag has been set to', protogram.flagged['name'])
+    console.log('the --name flag has been set to', program.flagged['name'])
 }
 ```
 
-### protogram.create(options)
-You can parse arguments from sub contexts by just creating a new protogram. Imagine:
+### program.create(options)
+You can parse arguments from sub contexts by just creating a new program. Imagine:
 ```bash
 myprogram --optionA --optionB --subprogram [ node ./main.js --optionA --optionB ]
 ```
 
 ```
-var new_protogram = protogram.create();
+var new_protogram = program.create();
 ```
 
 Now you can parse subcontexts passed through the main program and perform actions on them too.
 
 ```javascript
-new_protogram.options(...);
-new_protogram.parse(protogram.flagged['subprogram'])
+new_program.options(...);
+new_program.parse(program.flagged['subprogram'])
 ```
 
 
@@ -199,14 +206,14 @@ new_protogram.parse(protogram.flagged['subprogram'])
 
 The following is some other useful stuff available in the API that might help you when dealing with command line arguments.
 
-### protogram.rebuildArgString(arguments_object)
+### program.rebuildArgString(arguments_object)
 A method to build (the best of its ability) a command string, based on the parsed arguments object passed in.
 
 This is useful in conjunction with `[child_process.exec](http://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback)`.
 
 ```javascript
 // rebuild the original command string for this program
-var original_command_string = protogram.rebuildArgString(protogram.raw_arguments);
+var original_command_string = program.rebuildArgString(program.raw_arguments);
 ```
 
 Or a better example using sub contexts:
@@ -216,18 +223,18 @@ node main.js --execute [ ls -l ./ ]
 ```
 
 ```javascript
-if(protogram.flagged[execute]){
-    console.log("Original Command String", protogram.rebuildArgString(protogram.flagged[execute]));
+if(program.flagged[execute]){
+    console.log("Original Command String", program.rebuildArgString(program.flagged[execute]));
 }
 ```
 
-### protogram.rebuildArgArray(arguments_object)
+### program.rebuildArgArray(arguments_object)
 A method to rebuild to (the best of its ability) a command array, based on the parsed arguments object passed in.
 
 This is useful in conjunction with `[child_process.spawn](http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)`.
 
 ```javascript
-var original_command_array = protogram.rebuildArgArray(protogram.raw_arguments);
+var original_command_array = program.rebuildArgArray(program.raw_arguments);
 ```
 
 Or a better example using sub contexts:
@@ -237,8 +244,8 @@ node main.js --spawn [ ls -l ./ ]
 ```
 
 ```javascript
-if(protogram.flagged[spawn]){
-    console.log("Original Command Array", protogram.rebuildArgArray(protogram.flagged[spawn]));
+if(program.flagged[spawn]){
+    console.log("Original Command Array", program.rebuildArgArray(program.flagged[spawn]));
 }
 ```
 
@@ -250,7 +257,7 @@ if(protogram.flagged[spawn]){
 ```javascript
 var columnify = require('columnify');
 
-protogram.option('--help',{
+program.option('--help',{
     shortcut: "-h",
     description: "display usage information",
     action: displayHelp
@@ -265,11 +272,11 @@ function displayHelp(err, value) {
     console.log('\n  protogram Test Case ' + 'v1.0.0');
     console.log('  Usage: node test/test.js [options]\n');
 
-    for (var flag_name in protogram.options) {
-        flag = protogram.options[flag_name];
+    for (var flag_name in program.options) {
+        flag = program.options[flag_name];
         display.push({
             ' ': ' ',
-            flag: protogram.renderFlagDetails(flag_name),
+            flag: program.renderFlagDetails(flag_name),
             description: flag.description
         });
     }
@@ -287,7 +294,7 @@ Let's say we want to spawn another process with values passed into our program:
 ```javascript
 var spawn = require(child_process).spawn;
 
-protogram.command('spawn', {
+program.command('spawn', {
     description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code) (ex. --execute [ ls -l ./ ])',
     required: 'command string',
     action: spawnCommand

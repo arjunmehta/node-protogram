@@ -1,18 +1,36 @@
+var pjson = require('../package.json');
+
+
+// we'll use spawn and exec in this example
+
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 
-var columnify = require('columnify');
+
+// including protogram and the protogram help generator
+
 var protogram = require('../main');
 var help = require('protogram-help');
 
 
-var pjson = require('../package.json');
+// create the root program with protogram
 
-console.log(JSON.stringify(process.argv));
+var program = protogram.create();
 
-protogram
-    .option('--help', help)
-    .option('--version', version)
+
+// set a wildcard command configuration on the program
+// the settings added to this command will be applied to all sub-commands
+// of the program
+
+program.command('*', {
+    includeRoot: true // also apply all these settings to the root
+}).option('--help', help.set({ // set the help command name
+    name: 'Protogram Example Program', // set the name the program that help will output
+    version: pjson.version, // set the version of the program that help will output
+    handleError: true // output help on error (ie. missing required arguments)
+}));
+
+program
     .option('--rebuild_command', {
         description: 'rebuild the original command',
         action: rebuildCommand
@@ -33,14 +51,14 @@ protogram
         action: testSubcontext
     });
 
-protogram.option('--somethingElse');
 
-protogram.command('run', {
-    alias: 'exec',
-    required: 'filename',
-    description: '',
-    action: function(args) {
+// create a sub commmand called "run"
 
+program.command('run', {
+    required: '[ command string ]',
+    description: 'run a command (ex. [ ls -l ./ ])',
+    action: function(args, flags) {
+        executeCommand(args[0]);
     }
 }).option('--new', {
     action: function(val) {
@@ -48,13 +66,12 @@ protogram.command('run', {
     }
 });
 
-protogram.parse(process.argv);
+
+program.parse(process.argv);
 
 
-function executeCommand(err, value) {
-    if (err) throw err;
-
-    var command = protogram.buildExecString(value);
+function executeCommand(value) {
+    var command = program.rebuildArgString(value);
     console.log("executing command", command);
 
     exec(command, function(error, stdout, stderr) {
@@ -64,15 +81,13 @@ function executeCommand(err, value) {
     });
 }
 
-function rebuildCommand(err, value) {
-    var originalCommand = protogram.buildExecString(protogram.raw_arguments);
+function rebuildCommand(value) {
+    var originalCommand = program.rebuildArgString(protogram.raw_arguments);
     console.log("Original command", originalCommand);
 }
 
-function spawnCommand(err, value) {
-    if (err) throw err;
-
-    var arr = protogram.buildSpawnArray(value);
+function spawnCommand(value) {
+    var arr = program.rebuildArgArray(value);
     console.log("spawing from array", arr);
 
     var little_one = spawn(arr[0], arr.slice(1), {
@@ -80,15 +95,13 @@ function spawnCommand(err, value) {
     });
 }
 
-function testSubcontext(err, value) {
-    if (err) throw err;
-
+function testSubcontext(value) {
     console.log("SUB CONTEXT RAW PARSED VALUE", JSON.stringify(value));
 
-    var new_protogram = protogram.createProgram();
+    var new_protogram = protogram.create();
 
     new_protogram.option('--good', {
-        action: function(err, value) {
+        action: function(value) {
             console.log("GOOD WORKED", value);
         }
     });
