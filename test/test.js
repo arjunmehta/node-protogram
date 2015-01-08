@@ -1,12 +1,13 @@
 var protogram = require('../main');
+var test_program = protogram.create();
 
 exports['Exported Properly'] = function(test) {
     test.expect(4);
 
-    test.equal(typeof protogram.options, 'object');
-    test.equal(typeof protogram.flagged, 'object');
-    test.equal(typeof protogram.parsed, 'object');
-    test.equal(typeof protogram.raw_arguments, 'object');
+    test.equal(typeof test_program.options, 'object');
+    test.equal(typeof test_program.flagged, 'object');
+    test.equal(typeof test_program.parsed, 'object');
+    test.equal(typeof test_program.raw_arguments, 'object');
 
     test.done();
 };
@@ -14,11 +15,11 @@ exports['Exported Properly'] = function(test) {
 exports['Add Options'] = function(test) {
     test.expect(3);
 
-    protogram.option('--optionA').option('--optionB').option('--optionC');
+    test_program.option('--optionA').option('--optionB').option('--optionC');
 
-    test.equal(typeof protogram.options.optionA, 'object');
-    test.equal(typeof protogram.options.optionB, 'object');
-    test.equal(typeof protogram.options.optionC, 'object');
+    test.equal(typeof test_program.options.optionA, 'object');
+    test.equal(typeof test_program.options.optionB, 'object');
+    test.equal(typeof test_program.options.optionC, 'object');
 
     test.done();
 };
@@ -26,9 +27,9 @@ exports['Add Options'] = function(test) {
 exports['Automatic Shortcuts'] = function(test) {
     test.expect(3);
 
-    test.equal(protogram.options.optionA.shortcut, 'o');
-    test.equal(protogram.options.optionB.shortcut, 'p');
-    test.equal(protogram.options.optionC.shortcut, 't');
+    test.equal(test_program.options.optionA.shortcut, 'o');
+    test.equal(test_program.options.optionB.shortcut, 'p');
+    test.equal(test_program.options.optionC.shortcut, 't');
 
     test.done();
 };
@@ -36,7 +37,7 @@ exports['Automatic Shortcuts'] = function(test) {
 exports['Set Option with Options'] = function(test) {
     test.expect(5);
 
-    protogram.option('optionD', {
+    test_program.option('optionD', {
         shortcut: '----y',
         required: 'value',
         description: 'a description',
@@ -45,11 +46,11 @@ exports['Set Option with Options'] = function(test) {
         }
     });
 
-    test.equal(typeof protogram.options.optionD, 'object');
-    test.equal(protogram.options.optionD.shortcut, 'y');
-    test.equal(protogram.options.optionD.description, 'a description');
-    test.equal(protogram.options.optionD.required, 'value');
-    test.equal(typeof protogram.options.optionD.action, 'function');
+    test.equal(typeof test_program.options.optionD, 'object');
+    test.equal(test_program.options.optionD.shortcut, 'y');
+    test.equal(test_program.options.optionD.description, 'a description');
+    test.equal(test_program.options.optionD.required, 'value');
+    test.equal(typeof test_program.options.optionD.action, 'function');
 
     test.done();
 };
@@ -82,20 +83,20 @@ exports['Parse Arguments'] = function(test) {
         "]"
     ];
 
-    protogram.parse(fake_argv);
+    test_program.parse(fake_argv);
 
-    test.equal(protogram.raw_arguments._, fake_argv);
+    test.equal(test_program.raw_arguments._, fake_argv);
 
-    // console.log("PARSED:::", protogram.parsed);
+    // console.log("PARSED:::", test_program.parsed);
 
-    test.equal(protogram.parsed._[0], fake_argv[2]);
-    test.equal(protogram.parsed.number, 297261);
-    test.equal(protogram.parsed.t, 'something');
-    test.equal(protogram.parsed.x, 'something longer than just 1 word');
-    test.equal(protogram.parsed.a, true);
-    test.equal(protogram.parsed.e._[0], 'subcontext');
-    test.equal(protogram.parsed.e.a, 'something else');
-    test.equal(protogram.parsed.e.b, 276287);
+    test.equal(test_program.parsed._[0], fake_argv[2]);
+    test.equal(test_program.parsed.number, 297261);
+    test.equal(test_program.parsed.t, 'something');
+    test.equal(test_program.parsed.x, 'something longer than just 1 word');
+    test.equal(test_program.parsed.a, true);
+    test.equal(test_program.parsed.e._[0], 'subcontext');
+    test.equal(test_program.parsed.e.a, 'something else');
+    test.equal(test_program.parsed.e.b, 276287);
 
 
     test.done();
