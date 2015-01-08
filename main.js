@@ -11,6 +11,10 @@ function Protogram(opts) {
 
     opts = opts || {};
 
+    // console.log("CREATING Protogram", opts);
+
+    opts.haltOnError = opts.haltOnError || false;
+
     Object.defineProperty(this, 'opts', {
         enumerable: false,
         value: opts
@@ -114,6 +118,7 @@ Protogram.prototype.command = function(command_name, opts, fn) {
     var command;
     opts = mergeOpts(opts, fn);
     opts.command_name = command_name;
+    opts.haltOnError = this.opts.haltOnError;
 
     if (command_name === '*') {
         command = new Protogram(opts);
@@ -167,7 +172,9 @@ Protogram.prototype.evaluate = function(parsed) {
         if (typeof this.error === 'function') {
             this.error(err, parsed);
         }
-        return;
+        if (this.opts.haltOnError === true) {
+            return;
+        }
     }
 
     for (var i = 0; i < possible_commands.length; i++) {

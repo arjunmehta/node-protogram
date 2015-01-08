@@ -1,5 +1,7 @@
 var protogram = require('../main');
-var test_program = protogram.create();
+var test_program = protogram.create({
+    haltOnError: true
+});
 
 exports['Exported Properly'] = function(test) {
     test.expect(4);
@@ -107,7 +109,9 @@ exports['New Program'] = function(test) {
 
     test.expect(6);
 
-    var new_protogram = protogram.create({root: true});
+    var new_protogram = protogram.create({
+        haltOnError: true
+    });
 
     test.equal(typeof new_protogram.options, 'object');
     test.equal(typeof new_protogram.flagged, 'object');
@@ -124,7 +128,9 @@ exports['Action Execution'] = function(test) {
 
     test.expect(2);
 
-    var new_protogram = protogram.create({root: true}),
+    var new_protogram = protogram.create({
+            haltOnError: true
+        }),
         executed = 0,
         fake_argv = [
             "node",
@@ -167,7 +173,9 @@ exports['Flag and Required'] = function(test) {
 
     test.expect(2);
 
-    var new_protogram = protogram.create({root: true}),
+    var new_protogram = protogram.create({
+            haltOnError: true
+        }),
         executed = 0,
         fake_argv = [
             "node",
@@ -215,7 +223,9 @@ exports['Set Command'] = function(test) {
 
     test.expect(expected);
 
-    var new_protogram = protogram.create({root: true}),
+    var new_protogram = protogram.create({
+            haltOnError: true
+        }),
         executed = 0,
         fake_argv = [
             "node",
@@ -260,7 +270,7 @@ exports['Main Required'] = function(test) {
     test.expect(expected);
 
     var new_protogram = protogram.create({
-            root: true
+            haltOnError: true
         }),
         executed = 0,
         fake_argv = [
@@ -272,7 +282,7 @@ exports['Main Required'] = function(test) {
 
     new_protogram.required = 'filename';
 
-    new_protogram.error = function(err, args, command) {
+    new_protogram.error = function(err, args) {
         // console.log("Main Required ERROR", err, args);        
         test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <filename> missing for command: \'example\'').message)));
         testDone();
@@ -280,7 +290,7 @@ exports['Main Required'] = function(test) {
     };
 
     new_protogram.option('--fail', {
-        action: function(err, args) {
+        action: function(value) {
             test.equal(true, false); // force fail
         }
     });
@@ -302,7 +312,9 @@ exports['Command Required'] = function(test) {
 
     test.expect(expected);
 
-    var new_protogram = protogram.create({root: true}),
+    var new_protogram = protogram.create({
+            haltOnError: true
+        }),
         executed = 0,
         fake_argv = [
             "node",
@@ -314,7 +326,7 @@ exports['Command Required'] = function(test) {
 
 
     new_protogram.option('--fail', {
-        action: function(err, args) {
+        action: function(value) {
             test.equal(true, false); // force fail
         }
     });
@@ -347,7 +359,9 @@ exports['Wildcard Command'] = function(test) {
 
     test.expect(expected);
 
-    var new_protogram = protogram.create({root: true}),
+    var new_protogram = protogram.create({
+            haltOnError: true
+        }),
         executed = 0,
         fake_argv = [
             "node",
@@ -366,7 +380,8 @@ exports['Wildcard Command'] = function(test) {
 
     new_protogram.command('*', {
         required: 'filename',
-        action: function(args) {
+        action: function(args, flags) {
+            console.log(this.opts, args, flags);
             test.equal(false, true); // force fail
         },
         error: function(err, args) {
@@ -395,7 +410,9 @@ exports['Wildcard Command Including Root'] = function(test) {
 
     test.expect(expected);
 
-    var new_protogram = protogram.create({root: true}),
+    var new_protogram = protogram.create({
+            haltOnError: true
+        }),
         executed = 0,
         fake_argv = [
             "node",
@@ -442,7 +459,9 @@ exports['Call Action with "this" as the Command'] = function(test) {
 
     test.expect(expected);
 
-    var new_protogram = protogram.create({root: true}),
+    var new_protogram = protogram.create({
+            haltOnError: true
+        }),
         executed = 0,
         fake_argv = [
             "node",
@@ -456,11 +475,11 @@ exports['Call Action with "this" as the Command'] = function(test) {
     new_protogram.command('win', {
         action: function(args, flags) {
 
-            if(flags){
+            if (flags) {
                 test.equal(flags.win, 297261);
             }
 
-            test.equal(true, true);            
+            test.equal(true, true);
             testDone();
         },
         error: function(err, args) {
@@ -479,12 +498,119 @@ exports['Call Action with "this" as the Command'] = function(test) {
 
     function testDone() {
         executed++;
-        if (executed == expected-1) {
+        if (executed == expected - 1) {
             test.done();
         }
     }
 };
 
+
+exports['Call Action and Don\'t Halt on Error'] = function(test) {
+
+    var expected = 5;
+    test.expect(expected);
+
+    var new_protogram = protogram.create({
+            required: 'command',
+            action: function(args, flags) {
+                test.equal(args.length, 0);
+                testDone();
+            }
+        }),
+        executed = 0,
+        fake_argv = [
+            "node",
+            "/Users/arjun/Working/node-protogram/example/example.js",
+            "win",
+            "--win",
+            "297261"
+        ];
+
+    new_protogram.command('win', {
+        required: 'another value',
+        action: function(args, flags) {
+            if (flags) {
+                test.equal(flags.win, 297261);
+                testDone();
+            }
+            test.equal(true, true);
+            testDone();
+        },
+        error: function(err, args) {
+            test.equal(true, true);
+            testDone();
+        }
+    }).option('--win', {
+        action: function(value) {
+            test.equal(value, 297261);
+            testDone();
+        }
+    });
+
+    new_protogram.command('test');
+
+    new_protogram.parse(fake_argv);
+
+    function testDone() {
+        executed++;
+        if (executed == expected) {
+            test.done();
+        }
+    }
+};
+
+
+exports['Call Action and Halt on Error'] = function(test) {
+
+    var expected = 2;
+    test.expect(expected);
+
+    var new_protogram = protogram.create({
+            haltOnError: true,
+            required: 'command',
+            action: function(args, flags) {
+                test.equal(args.length, 0);
+                testDone();
+            }
+        }),
+        executed = 0,
+        fake_argv = [
+            "node",
+            "/Users/arjun/Working/node-protogram/example/example.js",
+            "win",
+            "--win",
+            "297261"
+        ];
+
+    new_protogram.command('win', {
+        required: 'another value',
+        action: function(args, flags) {
+            if (flags) {
+                test.equal(false, true); // force fail
+            }
+            test.equal(false, true); // force fail
+        },
+        error: function(err, args) {
+            test.equal(JSON.stringify(err.message), JSON.stringify((new Error('Required argument <another value> missing for command: \'win\'').message)));
+            testDone();
+        }
+    }).option('--win', {
+        action: function(value) {
+            test.equal(false, true); // force fail
+        }
+    });
+
+    new_protogram.command('test');
+
+    new_protogram.parse(fake_argv);
+
+    function testDone() {
+        executed++;
+        if (executed == expected) {
+            test.done();
+        }
+    }
+};
 
 exports['tearDown'] = function(done) {
     done();
