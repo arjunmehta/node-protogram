@@ -26,7 +26,7 @@ var protogram = require('protogram');
 ```
 
 ### Add Option Flags and Their Handlers
-Add option flags to your protogram. Shortcuts will automatically be made based on the first character of the specified option name.
+Add option flags to your protogram. Shortcuts will automatically be made based on the first available character of the specified option name.
 
 ```javascript
 protogram.option('--optionA').option('--optionB');
@@ -105,20 +105,40 @@ node ./example/example.js -h
 
 
 ## API
+### protogram.command(command_name, options, handler)
+Add a sub-command to your protogram. Set the `command_name` to `'*'` to 
 
-### protogram.command()
+- `command_name` **String**: Name of the sub-command to your program.
+- `options` Object:
+    - `description` **String**: Specify a description for the command to recall later.
+    - `description` **String**: Specify a description for the command to recall later.
+    - `required` **String**: Set this command to a short 'string' describing a required value that needs to be passed in when this command is set.
+    - `optional` **String**: Set this command to a short 'string' describing an optional value that needs to be passed in when this command is set. If `required` is set, `optional` will be ignored.
+    - `action` **Function(value, program)**: A convenience property to use to specify the handler method. If both are specified, only this one will be used.
+    - `error` **Function(error, value,** program): A convenience property to use to specify the handler method. If both are specified, only this one will be used.
+- `handler` **Function(value, program)**: Use a handler method to handle the `value` passed in with the command-line command. Also handles `err` which is non-`null` if a value is `required` but not set by the user. Alternatively look at the `action` option.
 
-### protogram.option(flag_name, {options}, handler)
-Add a flag with `flag_name` as an option to your protogram.
+Returns a new `Protogram` command object.
 
-Use a handler method to handle the `value` passed in with the command-line flag. Also handles `err` which is non-`null` if a value is `required` but not set by the user. Alternatively look at the `action` option.
+#### The Special `*` Wildcard Command Setting
 
-#### Options
-`shortcut`: Specify a shortcut letter for the flag. Defaults to the first letter of the `flag_name`.
-`description`: Specify a description for the flag to recall later.
-`required`: Set this flag to a short 'string' describing a required value that needs to be passed in when this flag is set.
-`optional`: Set this flag to a short 'string' describing an optional value that needs to be passed in when this flag is set. If `required` is set, `optional` will be ignored.
-`action`: A convenience property to use to specify the handler method. If both are specified, only this one will be used.
+
+
+### protogram.option(flag_name, options, handler)
+Add a flag as an option to your protogram.
+
+- `flag_name` **String**: Name of the option of your program.
+- `options` Object:
+    - `description` **String**: Specify a description for the flag to recall later.
+    - `shortcut` **String**: Specify a shortcut letter for the flag. Defaults to the first available letter of the `flag_name`.
+    - `description` **String**: Specify a description for the flag to recall later.
+    - `required` **String**: Set this flag to a short 'string' describing a required value that needs to be passed in when this flag is set.
+    - `optional` **String**: Set this flag to a short 'string' describing an optional value that needs to be passed in when this flag is set. If `required` is set, `optional` will be ignored.
+    - `action` **Function(value, program)**: A convenience property to use to specify the handler method. If both are specified, only this one will be used.
+    - `error` **Function(error, value,** program): A convenience property to use to specify the handler method. If both are specified, only this one will be used.
+- `handler` **Function(value, program)**: Use a handler method to handle the `value` passed in with the command-line flag. Also handles `err` which is non-`null` if a value is `required` but not set by the user. Alternatively look at the `action` option.
+
+returns the parent `Protogram` command object.
 
 #### Minimal Example
 ```javascript
@@ -148,7 +168,7 @@ protogram.option('--name', {
 ```
 
 ### protogram.parse(argv)
-Pass in your full `process.argv` object into the `protogram.parse` method to begin parsing the command-line arguments.
+Pass in your full `process.argv` array into the `protogram.parse` method to begin parsing the command-line arguments.
 
 ```javascript
 protogram.parse(process.argv);
@@ -163,14 +183,14 @@ if(protogram.flagged['name']){
 }
 ```
 
-### protogram.createProgram()
+### protogram.create(options)
 You can parse arguments from sub contexts by just creating a new protogram. Imagine:
 ```bash
 myprogram --optionA --optionB --subprogram [ node ./main.js --optionA --optionB ]
 ```
 
 ```
-var new_protogram = protogram.createProgram();
+var new_protogram = protogram.create();
 ```
 
 Now you can parse subcontexts passed through the main program and perform actions on them too.

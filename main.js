@@ -2,7 +2,7 @@ var path = require('path');
 var subarg = require('subarg');
 
 
-function Prorogram(opts) {
+function Protogram(opts) {
 
     opts = opts || {};
 
@@ -20,23 +20,24 @@ function Prorogram(opts) {
     this.flagged = {};
 }
 
+
 // Prototype Setter/Getter Properties
 
-Object.defineProperty(Prorogram.prototype, "command_name", {
+Object.defineProperty(Protogram.prototype, "command_name", {
     enumerable: true,
     get: function() {
         return this.opts.command_name;
     }
 });
 
-Object.defineProperty(Prorogram.prototype, "parent_command", {
+Object.defineProperty(Protogram.prototype, "parent_command", {
     enumerable: true,
     get: function() {
         return this.opts.parent_command;
     }
 });
 
-Object.defineProperty(Prorogram.prototype, "action", {
+Object.defineProperty(Protogram.prototype, "action", {
     enumerable: true,
     get: function() {
         return this.opts.action;
@@ -46,7 +47,7 @@ Object.defineProperty(Prorogram.prototype, "action", {
     }
 });
 
-Object.defineProperty(Prorogram.prototype, "error", {
+Object.defineProperty(Protogram.prototype, "error", {
     enumerable: true,
     get: function() {
         return this.opts.error;
@@ -56,7 +57,7 @@ Object.defineProperty(Prorogram.prototype, "error", {
     }
 });
 
-Object.defineProperty(Prorogram.prototype, "required", {
+Object.defineProperty(Protogram.prototype, "required", {
     enumerable: true,
     get: function() {
         return this.opts.required;
@@ -66,7 +67,7 @@ Object.defineProperty(Prorogram.prototype, "required", {
     }
 });
 
-Object.defineProperty(Prorogram.prototype, "description", {
+Object.defineProperty(Protogram.prototype, "description", {
     enumerable: true,
     get: function() {
         return this.opts.description;
@@ -79,11 +80,11 @@ Object.defineProperty(Prorogram.prototype, "description", {
 
 // Core API Methods
 
-Prorogram.prototype.create = function create(opts) {
-    return new Prorogram(opts);
+Protogram.prototype.create = function create(opts) {
+    return new Protogram(opts);
 };
 
-Prorogram.prototype.option = function(flag_name, opts, fn) {
+Protogram.prototype.option = function(flag_name, opts, fn) {
 
     if (typeof flag_name !== 'string') {
         throw new Error("Missing Option Flag Name");
@@ -103,7 +104,7 @@ Prorogram.prototype.option = function(flag_name, opts, fn) {
     return this;
 };
 
-Prorogram.prototype.command = function(command_name, opts, fn) {
+Protogram.prototype.command = function(command_name, opts, fn) {
 
     if (typeof command_name !== 'string') {
         throw new Error("Missing Command Name");
@@ -114,18 +115,18 @@ Prorogram.prototype.command = function(command_name, opts, fn) {
     opts.command_name = command_name;
 
     if (command_name === '*') {
-        command = new Prorogram(opts);
+        command = new Protogram(opts);
         this.wildcard = command;
     } else {
         opts.parent_command = this;
-        command = new Prorogram(opts);
+        command = new Protogram(opts);
         this.commands[command_name] = command;
     }
 
     return command;
 };
 
-Prorogram.prototype.parse = function(argv) {
+Protogram.prototype.parse = function(argv) {
 
     if (!Array.isArray(argv) && typeof argv === 'object') {
         argv = this.rebuildArgArray(argv);
@@ -142,7 +143,7 @@ Prorogram.prototype.parse = function(argv) {
     this.evaluate(this.parsed);
 };
 
-Prorogram.prototype.evaluate = function(parsed) {
+Protogram.prototype.evaluate = function(parsed) {
 
     var possible_commands = parsed._,
         err = null,
@@ -187,7 +188,7 @@ Prorogram.prototype.evaluate = function(parsed) {
     }
 };
 
-Prorogram.prototype.evaluateFlags = function(parsed) {
+Protogram.prototype.evaluateFlags = function(parsed) {
 
     var value = null,
         err = null,
@@ -221,7 +222,7 @@ Prorogram.prototype.evaluateFlags = function(parsed) {
     }
 };
 
-Prorogram.prototype.applyWildCard = function() {
+Protogram.prototype.applyWildCard = function() {
 
     var wildcard = this.wildcard;
 
@@ -245,11 +246,11 @@ Prorogram.prototype.applyWildCard = function() {
 
 // Extra Sauce API Methods
 
-Prorogram.prototype.rebuildArgString = function(parsed_args) {
+Protogram.prototype.rebuildArgString = function(parsed_args) {
     return unparse(parsed_args).command_string;
 };
 
-Prorogram.prototype.rebuildArgArray = function(parsed_args) {
+Protogram.prototype.rebuildArgArray = function(parsed_args) {
     return unparse(parsed_args);
 };
 
@@ -318,6 +319,6 @@ function mergeProperties(objectA, objectB) {
 }
 
 
-module.exports = exports = new Prorogram({
+module.exports = exports = new Protogram({
     root: true
 });
