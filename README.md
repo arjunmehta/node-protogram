@@ -105,18 +105,16 @@ node ./example/example.js -h
 
 
 ## API
-### protogram.command(command_name, options, handler)
+### protogram.command(command_name, options)
 Add a sub-command to your protogram. Set the `command_name` to `'*'` to 
 
 - `command_name` **String**: Name of the sub-command to your program.
 - `options` Object:
     - `description` **String**: Specify a description for the command to recall later.
-    - `description` **String**: Specify a description for the command to recall later.
     - `required` **String**: Set this command to a short 'string' describing a required value that needs to be passed in when this command is set.
     - `optional` **String**: Set this command to a short 'string' describing an optional value that needs to be passed in when this command is set. If `required` is set, `optional` will be ignored.
     - `action` **Function(value, program)**: A convenience property to use to specify the handler method. If both are specified, only this one will be used.
     - `error` **Function(error, value,** program): A convenience property to use to specify the handler method. If both are specified, only this one will be used.
-- `handler` **Function(value, program)**: Use a handler method to handle the `value` passed in with the command-line command. Also handles `err` which is non-`null` if a value is `required` but not set by the user. Alternatively look at the `action` option.
 
 Returns a new `Protogram` command object.
 
@@ -124,19 +122,17 @@ Returns a new `Protogram` command object.
 
 
 
-### protogram.option(flag_name, options, handler)
+### protogram.option(flag_name, options)
 Add a flag as an option to your protogram.
 
 - `flag_name` **String**: Name of the option of your program.
 - `options` Object:
-    - `description` **String**: Specify a description for the flag to recall later.
     - `shortcut` **String**: Specify a shortcut letter for the flag. Defaults to the first available letter of the `flag_name`.
-    - `description` **String**: Specify a description for the flag to recall later.
     - `required` **String**: Set this flag to a short 'string' describing a required value that needs to be passed in when this flag is set.
     - `optional` **String**: Set this flag to a short 'string' describing an optional value that needs to be passed in when this flag is set. If `required` is set, `optional` will be ignored.
+    - `description` **String**: Specify a description for the flag to recall later.
     - `action` **Function(value, program)**: A convenience property to use to specify the handler method. If both are specified, only this one will be used.
     - `error` **Function(error, value,** program): A convenience property to use to specify the handler method. If both are specified, only this one will be used.
-- `handler` **Function(value, program)**: Use a handler method to handle the `value` passed in with the command-line flag. Also handles `err` which is non-`null` if a value is `required` but not set by the user. Alternatively look at the `action` option.
 
 returns the parent `Protogram` command object.
 
