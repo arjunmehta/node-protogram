@@ -157,9 +157,7 @@ Prorogram.prototype.evaluate = function(parsed) {
     args = possible_commands.slice(0);
 
     this.applyWildCard();
-
-    console.log("POSSIBLE COMMANDS", possible_commands);
-
+    
     err = evalRequiredError((this.required && possible_commands.length === 0), this.required, 'command', this.command_name);
 
     if (err !== null) {
