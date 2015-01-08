@@ -1,8 +1,8 @@
-# prorogram
+# protogram
 
-[![Build Status](https://travis-ci.org/arjunmehta/node-prorogram.svg?branch=master)](https://travis-ci.org/arjunmehta/node-prorogram)
+[![Build Status](https://travis-ci.org/arjunmehta/node-protogram.svg?branch=master)](https://travis-ci.org/arjunmehta/node-protogram)
 
-![prorogram title image](https://raw.githubusercontent.com/arjunmehta/node-prorogram/image/image/prorogram.png)
+![protogram title image](https://raw.githubusercontent.com/arjunmehta/node-protogram/image/image/protogram.png)
 
 A node.js module to **recursively create command-line programs and sub-programs**. Easily handle arguments and sub-commands without all the fat. Some things this module provides:
 
@@ -14,7 +14,7 @@ A node.js module to **recursively create command-line programs and sub-programs*
 
 ## Installation
 ```bash
-npm install --save prorogram
+npm install --save protogram
 ```
 
 ## Basic Usage
@@ -22,20 +22,20 @@ npm install --save prorogram
 ### Include
 
 ```javascript
-var prorogram = require('prorogram');
+var protogram = require('protogram');
 ```
 
 ### Add Option Flags and Their Handlers
-Add option flags to your prorogram. Shortcuts will automatically be made based on the first character of the specified option name.
+Add option flags to your protogram. Shortcuts will automatically be made based on the first character of the specified option name.
 
 ```javascript
-prorogram.option('--optionA').option('--optionB');
+protogram.option('--optionA').option('--optionB');
 ```
 
 OR take more control over how you want to handle flags, whether they need required or optional values, and how you want to handle them.
 
 ```javascript
-prorogram.option('--optionA', {
+protogram.option('--optionA', {
     shortcut: '-a',
     description: 'Use a generic flag to do anything',
     required: 'file name',
@@ -50,10 +50,10 @@ prorogram.option('--optionA', {
 
 
 ### Add Commands as Sub-Programs
-Infinitely add git-style commands to your program, and build them as you would your main prorogram.
+Infinitely add git-style commands to your program, and build them as you would your main protogram.
 
 ```javascript
-var sub_prorogram = prorogram.command('run', {
+var sub_protogram = protogram.command('run', {
     alias: 'execute',
     description: 'execute a command',
     required: 'path name',
@@ -71,14 +71,14 @@ var sub_prorogram = prorogram.command('run', {
 Now that you've set everything up, you're ready to parse your program's arguments.
 
 ```javascript
-prorogram.parse(process.argv);
+protogram.parse(process.argv);
 ```
 
 ### Test Flags
 If you'd prefer the good ol' fashioned way of testing your flags, instead of using the handlers, just test their existence after you've parsed your arguments:
 
 ```javascript
-if(prorogram.selected['generic']){
+if(protogram.flagged['generic']){
     console.log('the --generic flag has been used!')
 }
 ```
@@ -86,15 +86,15 @@ if(prorogram.selected['generic']){
 ### View All Parsed Arguments
 You can view the parsed arguments (parsed with [subarg](https://github.com/substack/subarg)) easily. Do what you will with them.
 ```
-console.log(prorogram.parsed);
+console.log(protogram.parsed);
 ```
 
 ## Example Program
 Try the example program included in the module to get some ideas of how to use this.
 
 ```bash
-# Switch to the prorogram module directory
-cd ./node_modules/prorogram
+# Switch to the protogram module directory
+cd ./node_modules/protogram
 
 # install dependencies for the example
 npm install
@@ -105,8 +105,11 @@ node ./example/example.js -h
 
 
 ## API
-### prorogram.option(flag_name, options, handler)
-Add a flag with `flag_name` as an option to your prorogram.
+
+### protogram.command()
+
+### protogram.option(flag_name, {options}, handler)
+Add a flag with `flag_name` as an option to your protogram.
 
 Use a handler method to handle the `value` passed in with the command-line flag. Also handles `err` which is non-`null` if a value is `required` but not set by the user. Alternatively look at the `action` option.
 
@@ -119,13 +122,13 @@ Use a handler method to handle the `value` passed in with the command-line flag.
 
 #### Minimal Example
 ```javascript
-prorogram.option('--name');
+protogram.option('--name');
 ```
 
 #### Minimal with a Handler Example
 
 ```javascript
-prorogram.option('--name', function(err, value){
+protogram.option('--name', function(err, value){
     console.log("Name is set to", value);
 });
 ```
@@ -133,7 +136,7 @@ prorogram.option('--name', function(err, value){
 #### The Works
 
 ```javascript
-prorogram.option('--name', {
+protogram.option('--name', {
     shortcut: '-n',
     description: 'Set the name of the user',
     required: 'username',
@@ -144,51 +147,51 @@ prorogram.option('--name', {
 });
 ```
 
-### prorogram.parse(argv)
-Pass in your full `process.argv` object into the `prorogram.parse` method to begin parsing the command-line arguments.
+### protogram.parse(argv)
+Pass in your full `process.argv` object into the `protogram.parse` method to begin parsing the command-line arguments.
 
 ```javascript
-prorogram.parse(process.argv);
+protogram.parse(process.argv);
 ```
 
-### prorogram.selected[flag]
-An object you can use to check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `prorogram.parse`.
+### protogram.flagged[flag]
+An object you can use to check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `protogram.parse`.
 
 ```javascript
-if(prorogram.selected['name']){
-    console.log('the --name flag has been set to', prorogram.selected['name'])
+if(protogram.flagged['name']){
+    console.log('the --name flag has been set to', protogram.flagged['name'])
 }
 ```
 
-### prorogram.createProgram()
-You can parse arguments from sub contexts by just creating a new prorogram. Imagine:
+### protogram.createProgram()
+You can parse arguments from sub contexts by just creating a new protogram. Imagine:
 ```bash
 myprogram --optionA --optionB --subprogram [ node ./main.js --optionA --optionB ]
 ```
 
 ```
-var new_prorogram = prorogram.createProgram();
+var new_protogram = protogram.createProgram();
 ```
 
 Now you can parse subcontexts passed through the main program and perform actions on them too.
 
 ```javascript
-new_prorogram.options(...);
-new_prorogram.parse(prorogram.selected['subprogram'])
+new_protogram.options(...);
+new_protogram.parse(protogram.flagged['subprogram'])
 ```
 
 ## Extra API
 
 The following is some other useful stuff available in the API that might help you when dealing with command line arguments.
 
-### prorogram.rebuildArgString(arguments_object)
+### protogram.rebuildArgString(arguments_object)
 A method to build (the best of its ability) a command string, based on the parsed arguments object passed in.
 
 This is useful in conjunction with `[child_process.exec](http://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback)`.
 
 ```javascript
 // rebuild the original command string for this program
-var original_command_string = prorogram.rebuildArgString(prorogram.raw_arguments);
+var original_command_string = protogram.rebuildArgString(protogram.raw_arguments);
 ```
 
 Or a better example using sub contexts:
@@ -198,18 +201,18 @@ node main.js --execute [ ls -l ./ ]
 ```
 
 ```javascript
-if(prorogram.selected[execute]){
-    console.log("Original Command String", prorogram.rebuildArgString(prorogram.selected[execute]));
+if(protogram.flagged[execute]){
+    console.log("Original Command String", protogram.rebuildArgString(protogram.flagged[execute]));
 }
 ```
 
-### prorogram.rebuildArgArray(arguments_object)
+### protogram.rebuildArgArray(arguments_object)
 A method to rebuild to (the best of its ability) a command array, based on the parsed arguments object passed in.
 
 This is useful in conjunction with `[child_process.spawn](http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)`.
 
 ```javascript
-var original_command_array = prorogram.rebuildArgArray(prorogram.raw_arguments);
+var original_command_array = protogram.rebuildArgArray(protogram.raw_arguments);
 ```
 
 Or a better example using sub contexts:
@@ -219,8 +222,8 @@ node main.js --spawn [ ls -l ./ ]
 ```
 
 ```javascript
-if(prorogram.selected[spawn]){
-    console.log("Original Command Array", prorogram.rebuildArgArray(prorogram.selected[spawn]));
+if(protogram.flagged[spawn]){
+    console.log("Original Command Array", protogram.rebuildArgArray(protogram.flagged[spawn]));
 }
 ```
 
@@ -232,7 +235,7 @@ if(prorogram.selected[spawn]){
 ```javascript
 var columnify = require('columnify');
 
-prorogram.option('--help',{
+protogram.option('--help',{
     shortcut: "-h",
     description: "display usage information",
     action: displayHelp
@@ -244,14 +247,14 @@ function displayHelp(err, value) {
     var display = [],
         flag;
 
-    console.log('\n  prorogram Test Case ' + 'v1.0.0');
+    console.log('\n  protogram Test Case ' + 'v1.0.0');
     console.log('  Usage: node test/test.js [options]\n');
 
-    for (var flag_name in prorogram.options) {
-        flag = prorogram.options[flag_name];
+    for (var flag_name in protogram.options) {
+        flag = protogram.options[flag_name];
         display.push({
             ' ': ' ',
-            flag: prorogram.renderFlagDetails(flag_name),
+            flag: protogram.renderFlagDetails(flag_name),
             description: flag.description
         });
     }
@@ -269,7 +272,7 @@ Let's say we want to spawn another process with values passed into our program:
 ```javascript
 var spawn = require(child_process).spawn;
 
-prorogram.command('spawn', {
+protogram.command('spawn', {
     description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code) (ex. --execute [ ls -l ./ ])',
     required: 'command string',
     action: spawnCommand

@@ -2,15 +2,15 @@ var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 
 var columnify = require('columnify');
-var prorogram = require('../main');
-var help = require('prorogram-help');
+var protogram = require('../main');
+var help = require('protogram-help');
 
 
 var pjson = require('../package.json');
 
 console.log(JSON.stringify(process.argv));
 
-prorogram
+protogram
     .option('--help', help)
     .option('--version', version)
     .option('--rebuild_command', {
@@ -33,9 +33,9 @@ prorogram
         action: testSubcontext
     });
 
-prorogram.option('--somethingElse');
+protogram.option('--somethingElse');
 
-prorogram.command('run', {
+protogram.command('run', {
     alias: 'exec',
     required: 'filename',
     description: '',
@@ -48,13 +48,13 @@ prorogram.command('run', {
     }
 });
 
-prorogram.parse(process.argv);
+protogram.parse(process.argv);
 
 
 function executeCommand(err, value) {
     if (err) throw err;
 
-    var command = prorogram.buildExecString(value);
+    var command = protogram.buildExecString(value);
     console.log("executing command", command);
 
     exec(command, function(error, stdout, stderr) {
@@ -65,14 +65,14 @@ function executeCommand(err, value) {
 }
 
 function rebuildCommand(err, value) {
-    var originalCommand = prorogram.buildExecString(prorogram.raw_arguments);
+    var originalCommand = protogram.buildExecString(protogram.raw_arguments);
     console.log("Original command", originalCommand);
 }
 
 function spawnCommand(err, value) {
     if (err) throw err;
 
-    var arr = prorogram.buildSpawnArray(value);
+    var arr = protogram.buildSpawnArray(value);
     console.log("spawing from array", arr);
 
     var little_one = spawn(arr[0], arr.slice(1), {
@@ -85,13 +85,13 @@ function testSubcontext(err, value) {
 
     console.log("SUB CONTEXT RAW PARSED VALUE", JSON.stringify(value));
 
-    var new_prorogram = prorogram.createProgram();
+    var new_protogram = protogram.createProgram();
 
-    new_prorogram.option('--good', {
+    new_protogram.option('--good', {
         action: function(err, value) {
             console.log("GOOD WORKED", value);
         }
     });
 
-    new_prorogram.parse(value);
+    new_protogram.parse(value);
 }
