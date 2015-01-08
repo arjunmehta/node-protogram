@@ -157,6 +157,9 @@ Prorogram.prototype.evaluate = function(parsed) {
     args = possible_commands.slice(0);
 
     this.applyWildCard();
+
+    console.log("POSSIBLE COMMANDS", possible_commands);
+
     err = evalRequiredError((this.required && possible_commands.length === 0), this.required, 'command', this.command_name);
 
     if (err !== null) {
@@ -204,8 +207,11 @@ Prorogram.prototype.evaluateFlags = function(parsed) {
             err = evalRequiredError((flag.required && value === true), flag.required, 'flag', '--' + flag_name);
 
             if (err !== null) {
+                if (typeof flag.parent_command.error === 'function') {
+                    flag.parent_command.error(err, parsed, this);
+                }
                 if (typeof flag.error === 'function') {
-                    flag.error(err, parsed, this);                    
+                    flag.error(err, parsed, this);
                 }
                 continue;
             }
