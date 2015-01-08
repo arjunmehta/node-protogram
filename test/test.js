@@ -435,6 +435,55 @@ exports['Wildcard Command Including Root'] = function(test) {
     }
 };
 
+exports['Call Action with "this" as the Command'] = function(test) {
+
+    var expected = 3;
+
+    test.expect(expected);
+
+    var new_protogram = protogram.create({root: true}),
+        executed = 0,
+        fake_argv = [
+            "node",
+            "/Users/arjun/Working/node-protogram/example/example.js",
+            "win",
+            "--win",
+            "297261"
+        ];
+
+
+    new_protogram.command('win', {
+        action: function(args) {
+
+            if(this.flagged.win){
+                test.equal(this.flagged.win, 297261);
+            }
+
+            test.equal(true, true);            
+            testDone();
+        },
+        error: function(err, args) {
+            test.equal(false, true);
+        }
+    }).option('--win', {
+        action: function(value) {
+            test.equal(value, 297261);
+            testDone();
+        }
+    });
+
+    new_protogram.command('test');
+
+    new_protogram.parse(fake_argv);
+
+    function testDone() {
+        executed++;
+        if (executed == expected-1) {
+            test.done();
+        }
+    }
+};
+
 
 exports['tearDown'] = function(done) {
     done();

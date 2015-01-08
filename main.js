@@ -98,7 +98,7 @@ Protogram.prototype.option = function(flag_name, opts, fn) {
     this.options[flag_name] = opts;
 
     if (typeof opts.added === 'function') {
-        opts.added(this, this.options[flag_name]);
+        opts.added.call(this, this.options[flag_name]);
     }
 
     return this;
@@ -163,7 +163,7 @@ Protogram.prototype.evaluate = function(parsed) {
 
     if (err !== null) {
         if (typeof this.error === 'function') {
-            this.error(err, parsed, this);
+            this.error(err, parsed);
         }
         return;
     }
@@ -184,7 +184,7 @@ Protogram.prototype.evaluate = function(parsed) {
     }
 
     if (typeof this.action === 'function') {
-        this.action(args, this);
+        this.action(args);
     }
 };
 
@@ -206,17 +206,17 @@ Protogram.prototype.evaluateFlags = function(parsed) {
             err = evalRequiredError((flag.required && value === true), flag.required, 'flag', '--' + flag_name);
 
             if (err !== null) {
-                if (typeof flag.parent_command.error === 'function') {
-                    flag.parent_command.error(err, parsed, this);
+                if (typeof this.error === 'function') {
+                    this.error(err, parsed);
                 }
                 if (typeof flag.error === 'function') {
-                    flag.error(err, parsed, this);
+                    flag.error.call(this, err, parsed);
                 }
                 continue;
             }
 
             if (typeof flag.action === 'function') {
-                flag.action(value, this);
+                flag.action.call(this, value);
             }
         }
     }

@@ -22,48 +22,43 @@ npm install --save protogram
 ### Include
 
 ```javascript
-var protogram = require('protogram');
+var program = require('protogram');
 ```
 
 ### Add Option Flags and Their Handlers
-Add option flags to your protogram. Shortcuts will automatically be made based on the first available character of the specified option name.
+Add option flags to your program. Shortcuts will automatically be made based on the first available character of the specified option name.
 
 ```javascript
-protogram.option('--optionA').option('--optionB');
+program.option('--optionA').option('--optionB');
 ```
 
-OR take more control over how you want to handle flags, whether they need required or optional values, and how you want to handle them.
+OR take more control over how you specify flags and how to handle them.
 
 ```javascript
-protogram.option('--optionA', {
+program.option('--optionA', {
     shortcut: '-a',
     description: 'Use a generic flag to do anything',
-    required: 'file name',
     action: function(value){
-        console.log("generic value is:", value);
-    },
-    error: function(err, args){
-        console.error("Error", err.message, "for arguments", args);
+        console.log("optionA was set to:", value);
     }
 });
 ```
 
 
 ### Add Commands as Sub-Programs
-Infinitely add git-style commands to your program, and build them as you would your main protogram.
+Recursively add git-style commands to your program, and build them as you would your main program.
 
 ```javascript
-var sub_protogram = protogram.command('run', {
-    alias: 'execute',
+var sub_program = program.command('run', {
     description: 'execute a command',
     required: 'path name',
     action: function(args){
-        console.log("executed was executed:", args);
-    },
-    error: function(err, args){
-        console.error("Error", err.message, "for arguments", args);
+        console.log("path to execute:", args._[0]);
+        if(this.flagged.now) // executing now
     }
 });
+
+sub_program.option('--now')
 ```
 
 ### Parse Arguments
@@ -71,22 +66,16 @@ var sub_protogram = protogram.command('run', {
 Now that you've set everything up, you're ready to parse your program's arguments.
 
 ```javascript
-protogram.parse(process.argv);
+program.parse(process.argv);
 ```
 
 ### Test Flags
 If you'd prefer the good ol' fashioned way of testing your flags, instead of using the handlers, just test their existence after you've parsed your arguments:
 
 ```javascript
-if(protogram.flagged['generic']){
+if(program.flagged['generic']){
     console.log('the --generic flag has been used!')
 }
-```
-
-### View All Parsed Arguments
-You can view the parsed arguments (parsed with [subarg](https://github.com/substack/subarg)) easily. Do what you will with them.
-```
-console.log(protogram.parsed);
 ```
 
 ## Example Program
@@ -106,53 +95,53 @@ node ./example/example.js -h
 
 ## API
 ### protogram.command(command_name, options)
-Add a sub-command to your protogram. Set the `command_name` to `'*'` to 
+Add a sub-command to your program. The sub-command is a new instance of the `Protogram` object!
 
 - `command_name` **String**: Name of the sub-command to your program.
 - `options` Object:
-    - `description` **String**: Specify a description for the command to recall later.
-    - `required` **String**: Set this command to a short 'string' describing a required value that needs to be passed in when this command is set.
-    - `optional` **String**: Set this command to a short 'string' describing an optional value that needs to be passed in when this command is set. If `required` is set, `optional` will be ignored.
-    - `action` **Function(value, program)**: A convenience property to use to specify the handler method. If both are specified, only this one will be used.
-    - `error` **Function(error, value,** program): A convenience property to use to specify the handler method. If both are specified, only this one will be used.
+    - `description` **String**: Specify a description for the sub-command.
+    - `required` **String**: Describe a required value that **must be** be passed in by the user if this sub-command is used.
+    - `optional` **String**: Describe an optional value that can be passed in when this sub-command is used. If `required` is set, `optional` will be ignored.
+    - `action` **Function(args, program)**: A handler method called if the sub-command is set without any errors. Receives all `args` passed in.
+    - `error` **Function(error, value, program)**: A handler method called if the flag is set but has an error (ie. `required` was set and no value was passed in by the user).
 
 Returns a new `Protogram` command object.
 
+#### Minimal Example
+```javascript
+```
+
 #### The Special `*` Wildcard Command Setting
+Set the `command_name` to `'*'` to apply universal settings to all sub-commands on your program.
 
+```javascript
 
+```
 
 ### protogram.option(flag_name, options)
-Add a flag as an option to your protogram.
+Add a `Flag` as an option to your protogram.
 
 - `flag_name` **String**: Name of the option of your program.
 - `options` Object:
     - `shortcut` **String**: Specify a shortcut letter for the flag. Defaults to the first available letter of the `flag_name`.
-    - `required` **String**: Set this flag to a short 'string' describing a required value that needs to be passed in when this flag is set.
-    - `optional` **String**: Set this flag to a short 'string' describing an optional value that needs to be passed in when this flag is set. If `required` is set, `optional` will be ignored.
-    - `description` **String**: Specify a description for the flag to recall later.
-    - `action` **Function(value, program)**: A convenience property to use to specify the handler method. If both are specified, only this one will be used.
-    - `error` **Function(error, value,** program): A convenience property to use to specify the handler method. If both are specified, only this one will be used.
+    - `description` **String**: Specify a description for the flag.
+    - `required` **String**: Describe a required value that **must be** be passed in when this flag is set.
+    - `optional` **String**: Describe an optional value that can be passed in when this flag is set. If `required` is set, `optional` will be ignored.
+    - `action` **Function(value, program)**: A handler method called if the flag is set without any errors.
+    - `error` **Function(error, value, program)**: A handler method called if the flag is set but has an error (ie. `required` was set and no value was passed in by the user).
+    - `added` **Function(program, flag)**: A method called when your option has been added to the program.
 
 returns the parent `Protogram` command object.
 
 #### Minimal Example
 ```javascript
-protogram.option('--name');
-```
-
-#### Minimal with a Handler Example
-
-```javascript
-protogram.option('--name', function(err, value){
-    console.log("Name is set to", value);
-});
+program.option('--name');
 ```
 
 #### The Works
 
 ```javascript
-protogram.option('--name', {
+program.option('--name', {
     shortcut: '-n',
     description: 'Set the name of the user',
     required: 'username',
@@ -163,18 +152,27 @@ protogram.option('--name', {
 });
 ```
 
+#### Minimal with a Handler Example
+Optionally, you can just pass a method as a classic callback, which will be called with both the error (`null` if none) and the value.
+
+```javascript
+program.option('--name', function(err, value){
+    console.log("Name is set to", value);
+});
+```
+
 ### protogram.parse(argv)
 Pass in your full `process.argv` array into the `protogram.parse` method to begin parsing the command-line arguments.
 
 ```javascript
-protogram.parse(process.argv);
+program.parse(process.argv);
 ```
 
 ### protogram.flagged[flag]
 An object you can use to check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `protogram.parse`.
 
 ```javascript
-if(protogram.flagged['name']){
+if(program.flagged['name']){
     console.log('the --name flag has been set to', protogram.flagged['name'])
 }
 ```
@@ -195,6 +193,7 @@ Now you can parse subcontexts passed through the main program and perform action
 new_protogram.options(...);
 new_protogram.parse(protogram.flagged['subprogram'])
 ```
+
 
 ## Extra API
 
