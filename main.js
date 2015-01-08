@@ -1,6 +1,11 @@
 var path = require('path');
 var subarg = require('subarg');
 
+function create(opts) {
+    opts = opts || {};
+    opts.root = true;
+    return new Protogram(opts);
+}
 
 function Protogram(opts) {
 
@@ -79,10 +84,6 @@ Object.defineProperty(Protogram.prototype, "description", {
 
 
 // Core API Methods
-
-Protogram.prototype.create = function create(opts) {
-    return new Protogram(opts);
-};
 
 Protogram.prototype.option = function(flag_name, opts, fn) {
 
@@ -322,6 +323,11 @@ function mergeProperties(objectA, objectB) {
 }
 
 
-module.exports = exports = new Protogram({
-    root: true
-});
+// module.exports = exports = new Protogram({
+//     root: true
+// });
+
+module.exports = exports = {
+    create: create,
+    Protogram: Protogram
+};
