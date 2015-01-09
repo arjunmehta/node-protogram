@@ -1,40 +1,55 @@
+/*
+
+Commands to try:
+
+node example.js --version
+node example.js -v
+
+node example.js dir
+node example.js dir -l
+
+node example.js --spawn [ ls -l ]
+node example.js -s [ ls -l ]
+
+node example.js --execute [ ls -l ]
+node example.js -e [ ls -l ]
+
+node example.js "something" --rebuild_command
+node example.js "something" -r
+
+node example.js "something" --subcontext [ A 29787 "b C" -a -B 29872 ]
+node example.js "something" -S [ A 29787 "b C" -a -B 29872 ]
+
+node example.js "something" -S [ A --good ]
+
+*/
+
+
 var pjson = require('../package.json');
-
-
-// we'll use spawn and exec in this example
 
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 
 
-// including protogram and the protogram help generator
+// begin example
+
 
 var protogram = require('../main');
-var help = require('protogram-help');
+var program = protogram.create();
 
-
-// create the root program with protogram
-
-var program = protogram.create({
-    action: function(args, flags) {
-        if (Object.keys(flags).length === 0) {
-            help.action.call(this);
-        }
+program.command('*', {
+    includeRoot: true,
+    error: function(err, args){
+        console.error(err.message);
+        // console.log("here are your possible options", Object.keys(this.options));
+        // console.log("and your possible commands", Object.keys(this.commands));
+    }
+}).option('--version', {
+    action: function(value) {
+        console.log("Protogram Example v" + pjson.version);
     }
 });
 
-
-// set a wildcard command configuration on the program
-// the settings added to this command will be applied to all sub-commands
-// of the program
-
-program.command('*', {
-    includeRoot: true // also apply all these settings to the root
-}).option('--help', help.set({ // set the help command name
-    name: 'Protogram Example Program', // set the name the program that help will output
-    version: pjson.version, // set the version of the program that help will output
-    handleError: true // output help on error (ie. missing required arguments)
-}));
 
 program
     .option('--rebuild_command', {
@@ -43,12 +58,12 @@ program
     })
     .option('--execute', {
         description: 'execute a command (ex. --execute [ ls -l ./ ])',
-        required: 'command string',
+        required: 'command array',
         action: executeCommand
     })
     .option('--spawn', {
         description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code) (ex. --execute [ ls -l ./ ])',
-        required: 'command string',
+        required: 'command array',
         action: spawnCommand
     })
     .option('--subcontext', {
@@ -58,28 +73,30 @@ program
     });
 
 
-// create a sub commmand called "run"
-
-program.command('run', {
-    required: 'command string',
+program.command('dir', {
     description: 'run a command (ex. [ ls -l ./ ])',
     action: function(args, flags) {
-        executeCommand(args[0]);
+
+        var arr = ['ls'];
+        if (flags.list) arr.push('-l');
+        spawnCommand({_: arr});
+
     }
-}).option('--new', {
+}).option('--list', {
     action: function(val) {
-        console.log("NEW NEW NEW", val);
+        console.log("Directory as Vertical List");
     }
 });
+
 
 function executeCommand(value) {
     var command = program.rebuildArgString(value);
     console.log("executing command", command);
 
     exec(command, function(error, stdout, stderr) {
-        console.log("stdout:\n" + stdout);
-        console.log("stderr:\n" + stderr);
-        console.log("Error", error);
+        console.log(stdout ? "stdout:\n" + stdout : '');
+        console.log(stderr ? "stderr:\n" + stderr : '');
+        console.log(error ? "Error:\n" + error : '');
     });
 }
 
@@ -89,6 +106,7 @@ function rebuildCommand(value) {
 }
 
 function spawnCommand(value) {
+
     var arr = program.rebuildArgArray(value);
     console.log("spawing from array", arr);
 
@@ -99,21 +117,23 @@ function spawnCommand(value) {
 
 function testSubcontext(value) {
 
-    console.log("SUB CONTEXT RAW PARSED VALUE", JSON.stringify(value));
+    console.log("Sub Context:", JSON.stringify(value));
 
     var new_protogram = protogram.create();
 
     new_protogram.option('--good', {
         action: function(value) {
-            console.log("GOOD WORKED", value);
+            console.log("Good Worked on Subcontext", value);
         }
     });
 
-    new_protogram.option('--help', help);
+    new_protogram.option('--optionA', {
+        action: function(value) {
+            console.log("OptionA Worked on Subcontext", value);
+        }
+    });    
 
     new_protogram.parse(value);
 }
-
-
 
 program.parse(process.argv);

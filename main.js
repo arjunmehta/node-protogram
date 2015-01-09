@@ -91,14 +91,20 @@ Protogram.prototype.parse = function(argv) {
         argv = this.rebuildArgArray(argv);
     }
 
-    if (this.opts.root) {
-        this.opts.command_name = path.basename(argv[1], '.js');
-    }
-
-    this.parsed = subarg(argv);
     this.raw_arguments = {
         _: argv
     };
+
+    if (this.opts.root) {
+        if (argv[0] === 'node' && path.extname(argv[1]) === '.js') {
+            this.opts.command_name = path.basename(argv[1], '.js');
+            argv = argv.slice(2);
+        } else {
+            this.opts.command_name = argv[0];
+        }
+    }
+
+    this.parsed = subarg(argv);
     this.evaluate(this.parsed);
 };
 
@@ -110,10 +116,6 @@ Protogram.prototype.evaluate = function(parsed) {
         args = [],
         flags = {},
         command;
-
-    if (this.opts.root) {
-        possible_commands.splice(0, 2);
-    }
 
     args = possible_commands.slice(0);
 

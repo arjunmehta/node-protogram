@@ -54,13 +54,13 @@ program.parse(process.argv);
 ### Test It
 
 ```bash
-node example.js 198787 "Arg 2" --optionA [ A 29787 "b C" ] --optionB "This Is A Long String"
+node example.js 198787 "Arg 2" --optionA [ A 29787 "b C" -A -B 29872 ] --optionB "This Is A Long String"
 ```
 
 Will output:
 
 ```
-optionA set to: [ "A", 29787, "b C" ]
+optionA set to: { _: [ "A", 29787, "b C"], A: true, B: 29872 }
 optionB set to: "This Is A Long String"
 passed in arguments: [ 198787, "Arg 2" ]
 ```
@@ -341,7 +341,7 @@ After your program is configured, pass in your full `process.argv` array into th
 program.parse(process.argv);
 ```
 
-### Protogram.flagged[flag]
+### Protogram.flagged & Protogram.flagged[flag_name]
 An object you can use to check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `program.parse`.
 
 ```javascript
