@@ -6,11 +6,10 @@
 
 A node.js module to **recursively create command-line programs and sub-programs**. Easily handle arguments and sub-commands without all the fat. Some things this module provides:
 
-- **a minimal, scalable interface**
-- **control over the handling of argument flags and sub-commands**
-- **ability to handle sub-contexts in your arguments a la [subarg](https://github.com/substack/subarg)**.
-- **access the raw arguments and parsed arguments along with passed-in user values**
-- **a few useful methods for `child_process.exec` and `child_process.spawn`**
+- **a minimal, yet easily scalable interface**
+- **flexible control over the handling of argument flags and sub-commands**
+- **ability to handle sub-contexts as arguments a la [subarg](https://github.com/substack/subarg)**.
+- **autogenerate help information via [protogram-help](https://github.com/arjunmehta/node-protogram-help)**
 
 ## Installation
 ```bash
@@ -19,36 +18,77 @@ npm install --save protogram
 
 ## Basic Usage
 
-### Include
+### Include and Create your Program
 
 ```javascript
-var protogram = require('protogram');
+var program = require('protogram').create();
 ```
 
-### Create Your Program
-```javascript
-var program = protogram.create();
-```
-
-### Add Option Flags and Their Handlers
+### Add Option Flags
 Add option flags to your program. Shortcuts will automatically be made based on the first available character of the specified option name.
 
 ```javascript
-program.option('--optionA').option('--optionB');
+program
+    .option('--optionA')  // shortcut will be -o
+    .option('--optionB'); // shortcut will be -O
 ```
 
-OR take more control over how you specify flags and how to handle them.
+### Set an Action For When Your Program Runs
+
+```javascript
+program.action = function(args, flags){
+    if(flags.optionA) console.log("optionA set to:", flags.optionA)
+    if(flags.optionB) console.log("optionB set to:", flags.optionB)
+    console.log("passed in arguments:", args)
+};
+```
+
+### Parse Your Arguments to Execute
+
+Finally, the most important step! Now that you've set everything up, you're ready to parse your program's arguments.
+
+```javascript
+program.parse(process.argv);
+```
+
+### Test It
+
+```bash
+node example.js 198787 "Arg 2" --optionA [ A 29787 "b C" ] --optionB "This Is A Long String"
+```
+
+Will output:
+
+```
+optionA set to: [ "A", 29787, "b C" ]
+optionB set to: "This Is A Long String"
+passed in arguments: [ 198787, "Arg 2" ]
+```
+
+
+## Advanced Usage
+
+The above was just to get you started. The API is super flexible and you can control the flow of your program to near infinite specificity.
+
+### Advanced Option Specification
+
+Take more control over how flags are specified and handled by passing in options to your `option` setting. Aside from the first argument specifying the flag name, all of the flag settings below are of course optional.
 
 ```javascript
 program.option('--optionA', {
     shortcut: '-a',
     description: 'Use a generic flag to do anything',
+    required: 'a value'
     action: function(value){
+        // called if the flag is set and there are no errors
         console.log("optionA was set to:", value);
+    },
+    error: function(err, value){
+        // called if the 'required' value is not specified when executing
+        console.error(err.message);
     }
 });
 ```
-
 
 ### Add Commands as Sub-Programs
 Recursively add git-style commands to your program, and build them as you would your main program.
@@ -57,25 +97,129 @@ Recursively add git-style commands to your program, and build them as you would 
 var sub_program = program.command('run', {
     description: 'execute a command',
     required: 'path name',
-    action: function(args){
-        console.log("path to execute:", args._[0]);
-        if(this.flagged.now) // executing now
+    action: function(args, flags){
+        // executed if there are no errors
+        console.log("path to execute:", args[0]);
+        if(flags.now) // executing now
+    },
+    error: function(err, args){
+        // called if the required argument is missing
+        // or if any flags' required arguments are missing.
+        console.error(err.message);
     }
 });
 
 sub_program.option('--now')
 ```
 
-### Parse Arguments
 
-Now that you've set everything up, you're ready to parse your program's arguments.
+### Use a Wildcard for Configuring All Commands
 
 ```javascript
-program.parse(process.argv);
+program.command('*', {
+    includeRoot: true // also apply all these settings to the root program
+}).option('--version', {
+    action: function(value){
+        console.log("My Program v4.0.0")
+    }
+});
 ```
 
+
+### Add Automated Help to Your Program
+Want to output usage instructions automatically for your program? Use the **protogram-help** module. Refer to the documentation for how to use.
+
+
+### Bubble Up Execution Paths
+
+By default the execution of `action` methods of a program does not bubble up to the parent commands.
+
+For example, let's say we create a program with a system of sub commands:
+
+```javascript
+var program = protogram.create({
+    action: function(args, flags) {
+        console.log("main program activated"); // will not be executed 
+    }
+});
+
+var sub_program = program.command('sub-command', {
+    action: function(args, flags) {
+        console.log("sub-command activated"); // will not be executed 
+    }
+});
+
+sub_program.command('sub-sub-command', {
+    action: function(args, flags) {
+        console.log("sub-sub-command activated"); // will be executed
+    }
+});
+```
+
+And execute:
+
+```bash
+node example.js sub-command sub-sub-command
+```
+
+Only the `sub-sub-command` action method would be trigged. We can change this by setting the `bubbleUp` option on any parent command.
+
+```javascript
+var program = protogram.create({
+    action: function(args, flags) {
+        console.log("main program activated"); // will not be executed 
+    }
+});
+
+var sub_program = program.command('sub-command', {
+    bubbleUp: true,
+    action: function(args, flags) {
+        console.log("sub-command activated"); // will be executed
+    }
+});
+
+sub_program.command('sub-sub-command', {
+    action: function(args, flags) {
+        console.log("sub-sub-command activated");  // will be executed
+    }
+});
+```
+
+Now both the `sub-command` and the `sub-sub-command` actions will be executed.
+
+### Halt on Error
+By default if there is an error (ie. a required argument is missing) for a parent command, the program will continue to parse and evaluate sub-commands and flags. Prevent this by setting the `haltOnError` option to `true` when you create your program.
+
+```javascript
+var program = protogram.create({haltOnError: true});
+```
+
+or apply to specific sub-commands:
+
+```javascript
+var sub_program = program.command('run', {
+    haltOnError: true,
+    required: 'path name',
+    action: function(args, flags){ },
+    error: function(err, args){ }
+})
+
+sub_program.command('at', {
+    required: 'a time',
+    action: function(args, flags){ },
+    error: function(err, args){ }
+});
+```
+
+```bash
+node example.js run at "13:34"
+```
+
+Now in the above example, even though the sub-command `at` is specified, it will not execute because the required argument `path name` is missing for the `run` command. The error will be handled by the `run`'s `error` property.
+
+
 ### Test Flags
-If you'd prefer the good ol' fashioned way of testing your flags, instead of using the handlers, just test their existence after you've parsed your arguments:
+If you'd prefer the good ol' fashioned way of testing your flags, instead of using handlers, just test their existence after you've parsed your arguments:
 
 ```javascript
 if(program.flagged['generic']){
@@ -83,49 +227,78 @@ if(program.flagged['generic']){
 }
 ```
 
-## Example Program
-Try the example program included in the module to get some ideas of how to use this.
 
-```bash
-# Switch to the protogram module directory
-cd ./node_modules/protogram
+## Full API
 
-# install the dependencies needed for the example
-npm install
+### Protogram.create(options)
+Returns a new `Protogram` command object.
 
-# run the example program and experiment
-node ./example/example.js -h
-```
-
-
-## API
-### program.create(command_name, options)
-
-### program.command(command_name, options)
-Add a sub-command to your program. The sub-command is a new instance of the `Protogram` object!
-
-- `command_name` **String**: Name of the sub-command to your program.
-- `options` Object:
+- `options` **Object**:
     - `description` **String**: Specify a description for the sub-command.
     - `required` **String**: Describe a required value that **must be** be passed in by the user if this sub-command is used.
     - `optional` **String**: Describe an optional value that can be passed in when this sub-command is used. If `required` is set, `optional` will be ignored.
     - `action` **Function(args, program)**: A handler method called if the sub-command is set without any errors. Receives all `args` passed in.
     - `error` **Function(error, value, program)**: A handler method called if the flag is set but has an error (ie. `required` was set and no value was passed in by the user).
+    - `haltOnError` **Boolean**: Set whether the program should stop parsing if there is an error.
+    - `bubbleUp` **Boolean**: Set whether the program's `action` method should be executed along with sub-commands.
 
+```javascript
+var program = protogram.create({
+    action: function(args, flags) {
+        console.log("running your program");
+    }
+});
+```
+
+### Protogram.command(command_name, options)
 Returns a new `Protogram` command object.
+
+Add a sub-command to your program. The sub-command is a new instance of `Protogram`.
+
+- `command_name` **String**: Name of the sub-command to your program. Use the `*` command name to apply this setting to all sub-commands of the program.
+- `options` **Object**: Since the **Protogram.command** method returns a new Protogram object, you can set the same options as **Protogram.create()**.
 
 #### Minimal Example
 ```javascript
+program.command('run', {
+    action: function(args, flags) {
+
+    }
+});
+```
+
+#### Example with a Required Argument
+
+```javascript
+program.command('run', {
+    action: function(args, flags) {
+
+    }
+});
 ```
 
 #### The Special `*` Wildcard Command Setting
-Set the `command_name` to `'*'` to apply universal settings to all sub-commands on your program.
+Set the `command_name` to `'*'` to apply universal settings to all sub-commands on your program. You can use the `includeRoot` option.
 
 ```javascript
+program.command('*', {
+    includeRoot: true // also apply all these settings to the root program
+    error: function(err, args){
+        console.log("A universal error message");
+    }
+}).option('--version', {
+    action: function(value){
+        console.log("My Program v4.0.0")
+    }
+});
 
+program.command('run');
 ```
 
-### program.option(flag_name, options)
+The `run` command, as well as the `main program` will inherit the settings from the `*` command configuration, as well as the flag options specified (ie. `version`).
+
+
+### Protogram.option(flag_name, options)
 Add a `Flag` as an option to your program.
 
 - `flag_name` **String**: Name of the option of your program.
@@ -141,6 +314,7 @@ Add a `Flag` as an option to your program.
 returns the parent `Protogram` command object.
 
 #### Minimal Example
+Add an option (`--name`) to your program. Protogram will automatically create a shortcut (`-n`) to your program.
 ```javascript
 program.option('--name');
 ```
@@ -159,155 +333,20 @@ program.option('--name', {
 });
 ```
 
-#### Minimal with a Handler Example
-Optionally, you can just pass a method as a classic callback, which will be called with both the error (`null` if none) and the value.
 
-```javascript
-program.option('--name', function(err, value){
-    console.log("Name is set to", value);
-});
-```
-
-### program.parse(argv)
-Pass in your full `process.argv` array into the `program.parse` method to begin parsing the command-line arguments.
+### Protogram.parse(argv)
+After your program is configured, pass in your full `process.argv` array into the **Protogram.parse()** method to begin parsing the command-line arguments.
 
 ```javascript
 program.parse(process.argv);
 ```
 
-### program.flagged[flag]
+### Protogram.flagged[flag]
 An object you can use to check to see whether the user has used a flag, and retrieve the passed in value. This will only work after the arguments have been parsed by `program.parse`.
 
 ```javascript
 if(program.flagged['name']){
     console.log('the --name flag has been set to', program.flagged['name'])
-}
-```
-
-### program.create(options)
-You can parse arguments from sub contexts by just creating a new program. Imagine:
-```bash
-myprogram --optionA --optionB --subprogram [ node ./main.js --optionA --optionB ]
-```
-
-```
-var new_protogram = program.create();
-```
-
-Now you can parse subcontexts passed through the main program and perform actions on them too.
-
-```javascript
-new_program.options(...);
-new_program.parse(program.flagged['subprogram'])
-```
-
-
-## Extra API
-
-The following is some other useful stuff available in the API that might help you when dealing with command line arguments.
-
-### program.rebuildArgString(arguments_object)
-A method to build (the best of its ability) a command string, based on the parsed arguments object passed in.
-
-This is useful in conjunction with `[child_process.exec](http://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback)`.
-
-```javascript
-// rebuild the original command string for this program
-var original_command_string = program.rebuildArgString(program.raw_arguments);
-```
-
-Or a better example using sub contexts:
-
-```bash
-node main.js --execute [ ls -l ./ ]
-```
-
-```javascript
-if(program.flagged[execute]){
-    console.log("Original Command String", program.rebuildArgString(program.flagged[execute]));
-}
-```
-
-### program.rebuildArgArray(arguments_object)
-A method to rebuild to (the best of its ability) a command array, based on the parsed arguments object passed in.
-
-This is useful in conjunction with `[child_process.spawn](http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)`.
-
-```javascript
-var original_command_array = program.rebuildArgArray(program.raw_arguments);
-```
-
-Or a better example using sub contexts:
-
-```bash
-node main.js --spawn [ ls -l ./ ]
-```
-
-```javascript
-if(program.flagged[spawn]){
-    console.log("Original Command Array", program.rebuildArgArray(program.flagged[spawn]));
-}
-```
-
-
-## More Examples
-
-### Custom Help Info
-
-```javascript
-var columnify = require('columnify');
-
-program.option('--help',{
-    shortcut: "-h",
-    description: "display usage information",
-    action: displayHelp
-})
-.option('--optionA').option('--optionB').option('--optionC');
-
-function displayHelp(err, value) {
-
-    var display = [],
-        flag;
-
-    console.log('\n  protogram Test Case ' + 'v1.0.0');
-    console.log('  Usage: node test/test.js [options]\n');
-
-    for (var flag_name in program.options) {
-        flag = program.options[flag_name];
-        display.push({
-            ' ': ' ',
-            flag: program.renderFlagDetails(flag_name),
-            description: flag.description
-        });
-    }
-
-    console.log(columnify(display, {
-        columnSplitter: '  '
-    }), "\n");
-}
-```
-
-### Spawn Child Processes through CLI
-
-Let's say we want to spawn another process with values passed into our program:
-
-```javascript
-var spawn = require(child_process).spawn;
-
-program.command('spawn', {
-    description: 'spawn an evented command (captures stdout and stderr as streams, as well as an exit code) (ex. --execute [ ls -l ./ ])',
-    required: 'command string',
-    action: spawnCommand
-});
-
-function spawnCommand(err, args) {
-    if (err) throw err;
-
-    console.log("spawing from array", args);
-
-    var little_one = spawn(args[0], args.slice(1), {
-        stdio: "inherit"
-    });
 }
 ```
 

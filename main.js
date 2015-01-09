@@ -3,6 +3,7 @@ var path = require('path');
 var unparse = require('unparse-args');
 var subarg = require('subarg');
 
+
 function create(opts) {
     opts = opts || {};
     opts.root = true;
@@ -12,81 +13,30 @@ function create(opts) {
 function Protogram(opts) {
 
     opts = opts || {};
-
-    // console.log("CREATING Protogram", opts);
-
     opts.haltOnError = opts.haltOnError || false;
-
-    Object.defineProperty(this, 'opts', {
-        enumerable: false,
-        value: opts
-    });
+    opts.bubbleUp = opts.bubbleUp || false;
+    this.opts = opts;
 
     this.options = {};
     this.commands = {};
-
     this.raw_arguments = {};
     this.parsed = {};
-
     this.flagged = {};
 }
 
 
 // Prototype Setter/Getter Properties
 
-Object.defineProperty(Protogram.prototype, "command_name", {
-    enumerable: true,
-    get: function() {
-        return this.opts.command_name;
-    }
-});
-
-Object.defineProperty(Protogram.prototype, "parent_command", {
-    enumerable: true,
-    get: function() {
-        return this.opts.parent_command;
-    }
-});
-
-Object.defineProperty(Protogram.prototype, "action", {
-    enumerable: true,
-    get: function() {
-        return this.opts.action;
-    },
-    set: function(fn) {
-        this.opts.action = fn;
-    }
-});
-
-Object.defineProperty(Protogram.prototype, "error", {
-    enumerable: true,
-    get: function() {
-        return this.opts.error;
-    },
-    set: function(fn) {
-        this.opts.error = fn;
-    }
-});
-
-Object.defineProperty(Protogram.prototype, "required", {
-    enumerable: true,
-    get: function() {
-        return this.opts.required;
-    },
-    set: function(reqd) {
-        this.opts.required = reqd;
-    }
-});
-
-Object.defineProperty(Protogram.prototype, "description", {
-    enumerable: true,
-    get: function() {
-        return this.opts.description;
-    },
-    set: function(desc) {
-        this.opts.description = desc;
-    }
-});
+addAliasesToPrototype(Protogram.prototype, [
+    "haltOnError",
+    "bubbleUp",
+    "command_name",
+    "parent_command",
+    "action",
+    "error",
+    "required",
+    "description"
+]);
 
 
 // Core API Methods
@@ -121,6 +71,7 @@ Protogram.prototype.command = function(command_name, opts, fn) {
     opts = mergeOpts(opts, fn);
     opts.command_name = command_name;
     opts.haltOnError = this.opts.haltOnError;
+    opts.bubbleUp = this.opts.bubbleUp;
 
     if (command_name === '*') {
         command = new Protogram(opts);
@@ -190,11 +141,14 @@ Protogram.prototype.evaluate = function(parsed) {
 
     if (terminal === true) {
         flags = this.evaluateFlags(parsed);
+    } else if (this.opts.bubbleUp === false) {
+        return;
     }
 
     if (err === null && typeof this.action === 'function') {
         this.action(args, flags);
-    } if (err !== null && typeof this.error === 'function') {
+    }
+    if (err !== null && typeof this.error === 'function') {
         this.error(err, parsed);
     }
 };
@@ -279,19 +233,39 @@ function evalRequiredError(condition, required, type, name) {
 
 function createShortcut(shortcut, flag_name, options) {
 
-    var exists;
+    var lower_exists, upper_exists,
+        uppercase_shortcut,
+        uppercase_flag_name = flag_name.toUpperCase(),
+        flag;
+
 
     if (!shortcut) {
         for (var i = 0; i < flag_name.length; i++) {
-            exists = false;
+
+            lower_exists = false;
             shortcut = flag_name[i];
-            for (var flag in options) {
+            for (flag in options) {
                 if (options[flag].shortcut === shortcut) {
-                    exists = true;
+                    lower_exists = true;
                     break;
                 }
             }
-            if (!exists) {
+
+            if (!lower_exists) {
+                break;
+            }
+
+            upper_exists = false;
+            shortcut = uppercase_flag_name[i];
+
+            for (flag in options) {
+                if (options[flag].shortcut === shortcut) {
+                    upper_exists = true;
+                    break;
+                }
+            }
+
+            if (!upper_exists) {
                 break;
             }
         }
@@ -331,10 +305,27 @@ function mergeProperties(objectA, objectB) {
     }
 }
 
+function addAliasesToPrototype(proto, aliases) {
+    var propertiesObj = {};
 
-// module.exports = exports = new Protogram({
-//     root: true
-// });
+    for (var i = 0; i < aliases.length; i++) {
+        propertiesObj[aliases[i]] = createAliasObject(aliases[i]);
+    }
+
+    Object.defineProperties(proto, propertiesObj);
+}
+
+function createAliasObject(alias_name) {
+    return {
+        enumerable: true,
+        get: function() {
+            return this.opts[alias_name];
+        },
+        set: function(val) {
+            this.opts[alias_name] = val;
+        }
+    };
+}
 
 module.exports = exports = {
     create: create,

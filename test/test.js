@@ -30,8 +30,8 @@ exports['Automatic Shortcuts'] = function(test) {
     test.expect(3);
 
     test.equal(test_program.options.optionA.shortcut, 'o');
-    test.equal(test_program.options.optionB.shortcut, 'p');
-    test.equal(test_program.options.optionC.shortcut, 't');
+    test.equal(test_program.options.optionB.shortcut, 'O');
+    test.equal(test_program.options.optionC.shortcut, 'p');
 
     test.done();
 };
@@ -511,6 +511,7 @@ exports['Call Action and Don\'t Halt on Error'] = function(test) {
     test.expect(expected);
 
     var new_protogram = protogram.create({
+            bubbleUp: true,
             required: 'command',
             action: function(args, flags) {
                 test.equal(args.length, 0);
@@ -565,6 +566,7 @@ exports['Call Action and Halt on Error'] = function(test) {
 
     var new_protogram = protogram.create({
             haltOnError: true,
+            bubbleUp: true,
             required: 'command',
             action: function(args, flags) {
                 test.equal(args.length, 0);

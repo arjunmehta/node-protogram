@@ -15,7 +15,13 @@ var help = require('protogram-help');
 
 // create the root program with protogram
 
-var program = protogram.create();
+var program = protogram.create({
+    action: function(args, flags) {
+        if (Object.keys(flags).length === 0) {
+            help.action.call(this);
+        }
+    }
+});
 
 
 // set a wildcard command configuration on the program
@@ -55,7 +61,7 @@ program
 // create a sub commmand called "run"
 
 program.command('run', {
-    required: '[ command string ]',
+    required: 'command string',
     description: 'run a command (ex. [ ls -l ./ ])',
     action: function(args, flags) {
         executeCommand(args[0]);
@@ -65,10 +71,6 @@ program.command('run', {
         console.log("NEW NEW NEW", val);
     }
 });
-
-
-program.parse(process.argv);
-
 
 function executeCommand(value) {
     var command = program.rebuildArgString(value);
@@ -82,7 +84,7 @@ function executeCommand(value) {
 }
 
 function rebuildCommand(value) {
-    var originalCommand = program.rebuildArgString(protogram.raw_arguments);
+    var originalCommand = program.rebuildArgString(program.raw_arguments);
     console.log("Original command", originalCommand);
 }
 
@@ -96,6 +98,7 @@ function spawnCommand(value) {
 }
 
 function testSubcontext(value) {
+
     console.log("SUB CONTEXT RAW PARSED VALUE", JSON.stringify(value));
 
     var new_protogram = protogram.create();
@@ -106,5 +109,11 @@ function testSubcontext(value) {
         }
     });
 
+    new_protogram.option('--help', help);
+
     new_protogram.parse(value);
 }
+
+
+
+program.parse(process.argv);
