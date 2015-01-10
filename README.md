@@ -262,7 +262,7 @@ Add a sub-command to your program. The sub-command is a new instance of `Protogr
 ```javascript
 program.command('run', {
     action: function(args, flags) {
-
+        console.log("executed the run command");
     }
 });
 ```
@@ -271,10 +271,14 @@ program.command('run', {
 
 ```javascript
 program.command('run', {
+    required: 'file path',
     action: function(args, flags) {
-
+        console.log("executed the run command successfully");
+    },
+    error: function(err, args){
+        console.log(err.message); // missing required <file path>
     }
-});
+}); 
 ```
 
 #### The Special `*` Wildcard Command Setting

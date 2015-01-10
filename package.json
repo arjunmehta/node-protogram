@@ -1,7 +1,7 @@
 {
   "name": "protogram",
-  "version": "1.1.1",
-  "description": "Handle command line arguments and sub arguments and sub sub arguments and sub sub sub arguments, etc... with just a wee bit of fat.",
+  "version": "1.1.2",
+  "description": "Handle command line arguments and sub arguments and sub sub arguments and sub sub sub arguments, etc.",
   "main": "main.js",
   "scripts": {
     "test": "nodeunit test/test.js",
@@ -18,7 +18,12 @@
     "commander",
     "command-line",
     "arguments",
-    "options"
+    "options",
+    "program",
+    "command",
+    "subarguments",
+    "flags",
+    "commands"
   ],
   "author": "Arjun Mehta",
   "license": "MIT",
