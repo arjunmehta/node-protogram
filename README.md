@@ -4,7 +4,7 @@
 
 ![protogram title image](https://raw.githubusercontent.com/arjunmehta/node-protogram/image/image/protogram.png)
 
-A node.js module to **recursively create command-line programs and sub-programs**. Easily handle arguments and sub-commands without all the fat. Some things this module provides:
+A node.js module to **recursively create command-line programs and sub-programs**. Easily handle command line arguments and sub arguments and sub sub arguments and sub sub sub arguments, etc... with just a *little bit* of fat. Some things this module provides:
 
 - **a minimal, yet easily scalable interface**
 - **flexible control over the handling of argument flags and sub-commands**
@@ -228,7 +228,7 @@ if(program.flagged['generic']){
 ```
 
 
-## Full API
+## API
 
 ### Protogram.create(options)
 Returns a new `Protogram` command object.

@@ -1,4 +1,6 @@
 var protogram = require('../main');
+
+
 var test_program = protogram.create({
     haltOnError: true
 });

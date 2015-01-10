@@ -1,7 +1,7 @@
 {
   "name": "protogram",
-  "version": "1.1.0",
-  "description": "Handle command line flags and sub arguments without all the fat",
+  "version": "1.1.1",
+  "description": "Handle command line arguments and sub arguments and sub sub arguments and sub sub sub arguments, etc... with just a wee bit of fat.",
   "main": "main.js",
   "scripts": {
     "test": "nodeunit test/test.js",
@@ -31,7 +31,6 @@
     "unparse-args": "~1.0.1"
   },
   "devDependencies": {
-    "nodeunit": "~0.8.8",
-    "protogram-help": "arjunmehta/node-protogram-help"    
+    "nodeunit": "~0.8.8"
   }
 }
