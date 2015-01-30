@@ -35,6 +35,7 @@ addAliasesToPrototype(Protogram.prototype, [
     "action",
     "error",
     "required",
+    "optional",
     "description"
 ]);
 
